@@ -409,6 +409,2053 @@ textarea.code[readonly]{cursor:text}
 }
 .chat.open{transform:none}
 .chat-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.chat-head>span{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;color:var(--muted)}
+#dcState{color:var(--dim);letter-spacing:.14em}
+#dcState.ok{color:var(--green-hi)}
+#dcState.bad{color:var(--red-hi)}
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:15px}
+.msg{max-width:88%;animation:fadeUp .25s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg .m-top{display:flex;align-items:baseline;gap:9px;margin-bottom:3px;font-family:'JetBrains Mono',monospace;font-size:10.5px}
+.msg b{font-size:11.5px;font-weight:600;color:var(--muted)}
+.msg time{color:var(--dim)}
+.msg p{font-size:14.5px;line-height:1.55;color:#edead9;overflow-wrap:anywhere}
+.msg.peer{align-self:flex-start;border-left:2px solid var(--line2);padding-left:11px}
+.msg.me{align-self:flex-end;text-align:right;border-right:2px solid rgba(242,180,64,.55);padding-right:11px}
+.msg.me b{color:var(--amber)}
+.typing{padding:0 19px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);min-height:19px}
+.typing.show{color:var(--muted)}
+.chat-form{display:flex;gap:9px;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.chat-form input{
+  flex:1;background:#0b0c09;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;
+}
+.chat-form input:focus{outline:none;border-color:var(--amber)}
+.chat-form input:disabled{opacity:.5}
+.chat-form button{
+  width:44px;height:44px;border-radius:10px;background:var(--amber);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+}
+.chat-form button:hover{background:var(--amber-hi)}
+.chat-form button svg{width:17px;height:17px}
+
+.ripple{
+  position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;
+  border:1.5px solid rgba(242,180,64,.9);border-radius:50%;pointer-events:none;z-index:5;
+  opacity:0;animation:rip 1.1s cubic-bezier(.2,.6,.3,1) forwards;
+}
+@keyframes rip{0%{transform:scale(1);opacity:.9}100%{transform:scale(64);opacity:0}}
+
+#toasts{position:fixed;left:20px;bottom:20px;z-index:60;display:flex;flex-direction:column;gap:10px;max-width:min(350px,calc(100vw - 40px))}
+.toast{
+  display:flex;align-items:flex-start;gap:11px;padding:13px 14px;border-radius:12px;
+  background:#1a1c14;border:1px solid var(--line2);border-left:3px solid var(--muted);
+  box-shadow:0 12px 30px rgba(0,0,0,.4);animation:tIn .3s cubic-bezier(.2,.8,.3,1) both;
+}
+.toast svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;color:var(--muted)}
+.toast span{font-size:13.5px;line-height:1.5;color:#e8e5d6}
+.toast .t-x{margin-left:auto;color:var(--dim);padding:2px;border-radius:5px}
+.toast .t-x:hover{color:var(--text)}
+.toast .t-x svg{width:13px;height:13px;margin:0}
+.toast.ok{border-left-color:var(--green)} .toast.ok svg{color:var(--green-hi)}
+.toast.warn{border-left-color:var(--amber)} .toast.warn svg{color:var(--amber)}
+.toast.err{border-left-color:var(--red)} .toast.err svg{color:var(--red-hi)}
+.toast.out{animation:tOut .25s forwards}
+@keyframes tIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateX(-10px)}}
+
+/* ============ responsive ============ */
+@media (max-width:1060px){
+  .landing-grid{grid-template-columns:1fr}
+  .landing-visual{min-height:340px}
+  .connect-grid{grid-template-columns:1fr}
+  .self-preview{max-width:520px}
+}
+@media (max-width:720px){
+  .brand-note{display:none}
+  .tb-mark{display:none}
+  .latency-chip{display:none}
+  .controls{gap:3px;bottom:18px}
+  .ctl{width:44px;height:44px}
+  .ctl svg{width:18px;height:18px}
+  .pip{width:152px;right:12px;bottom:100px}
+  .peer-pill{left:12px;bottom:100px;padding:7px 12px}
+  .peer-pill span.name{font-size:13px}
+  .chat{top:60px;bottom:90px}
+  .ra-in{font-size:78px}
+  .join-box .row .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<main id="app">
+
+  <!-- ================= LANDING ================= -->
+  <section class="screen landing" id="landing">
+    <div class="brandbar">
+      <div class="brand">
+        <span class="brand-mark guj">વાતો<b>।</b></span>
+        <span class="brand-tag">VAATO</span>
+      </div>
+      <div class="brand-note">PEER-TO-PEER · NO SERVER · NO LOGIN</div>
+    </div>
+
+    <div class="landing-grid">
+      <div class="landing-copy">
+        <p class="eyebrow"><i data-lucide="radio"></i> BROWSER-TO-BROWSER VIDEO CALL</p>
+        <h1 class="display">વાતો<span class="danda">।</span></h1>
+        <p class="lede">
+          Ek code, ek jod — ane vaato shuru. Video ane avaz tamara ane tamara mitra na
+          browser vachche <b>sedhi</b> jude chhe. Koi account nathi, koi cloud nathi,
+          koi recording middleman pase nathi jatu.
+        </p>
+
+        <div class="join-box">
+          <label for="nameInput">TAMARU NAAM</label>
+          <div class="row">
+            <input class="field" id="nameInput" maxlength="20" placeholder="e.g. Priya" autocomplete="off"/>
+            <button class="btn primary" id="btnHost"><i data-lucide="video"></i> Navi call</button>
+            <button class="btn ghost" id="btnGuest"><i data-lucide="key-round"></i> Code thi jodo</button>
+          </div>
+          <div class="collapse" id="guestCodeWrap">
+            <textarea class="code-in" id="guestCodeIn" spellcheck="false"
+              placeholder="Host no code ha. (V1… valu badhu paste karo)"></textarea>
+            <button class="btn primary" id="btnJoin"><i data-lucide="log-in"></i> Jodo</button>
+            <div class="form-err" id="codeErr"></div>
+          </div>
+          <p class="hint">Start karat vakhat camera-mic ni permission mangaay — “Allow” karjo. Code moklvama WhatsApp / Telegram / email vaparo (moto hoy etle SMS ma nathi malshe). Camera chalavva <b>localhost ke HTTPS</b> joie.</p>
+
+          <div class="st-row">
+            <button class="btn ghost" id="btnSelfTest"><i data-lucide="flask-conical"></i> Ekle j browser ma test karo</button>
+            <p class="st-note">Judai nathi thavti? Aa button dabavo — ekle j tab ma be connection banavi ne ICE, chat ane media pipeline test kare. PASS thaye to app sahu chhe, problem network ke code-transfer ma chhe.</p>
+          </div>
+        </div>
+
+        <ul class="facts">
+          <li><i data-lucide="shield-check"></i> DTLS-SRTP encryption — vaato ekdum private</li>
+          <li><i data-lucide="server-off"></i> Media koi middleman server thi passe nathi thayu</li>
+          <li><i data-lucide="message-square"></i> Bhitari chat, screen-share ane recording pan sathi ma</li>
+        </ul>
+      </div>
+
+      <div class="landing-visual">
+        <canvas id="signal"></canvas>
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+        <div class="visual-caption">
+          <span class="pulse-dot"></span>
+          <span>SIGNAL <span id="visualState">STANDBY</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONNECT ================= -->
+  <section class="screen connect" id="connect" hidden>
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="icon-btn" id="cBack" data-tip="Pacha" aria-label="Pacha"><i data-lucide="arrow-left"></i></button>
+        <span class="tb-mark guj">વાતો<b>।</b></span>
+      </div>
+      <div class="status-pill">
+        <span class="sp-dot amber" id="spDot"></span>
+        <span id="spText">RAHYO JAVO…</span>
+      </div>
+      <div class="tb-right"><span class="chip" id="cMode">HOST</span></div>
+    </header>
+
+    <div class="connect-grid">
+      <div>
+        <div class="steps">
+          <div class="step" id="step1">
+            <div class="s-num">01</div>
+            <div class="s-body"><h3></h3><p></p></div>
+          </div>
+          <div class="step" id="step2">
+            <div class="s-num">02</div>
+            <div class="s-body"><h3></h3><p></p></div>
+          </div>
+          <div class="step" id="step3">
+            <div class="s-num">03</div>
+            <div class="s-body"><h3></h3><p></p></div>
+          </div>
+        </div>
+
+        <div class="self-preview">
+          <video id="previewVideo" muted autoplay playsinline></video>
+          <span class="preview-badge" id="previewName">—</span>
+          <span class="meter" id="previewMeter"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <!-- host panel -->
+        <div id="hostPanel">
+          <div class="block">
+            <div class="block-head"><span class="bt">TAMARO INVITE CODE</span><span class="bm" id="offerMeta">BANAVMA AA RAYO…</span></div>
+            <textarea class="code" id="offerOut" readonly placeholder="Code banavva aa rahyo chhe…"></textarea>
+            <button class="btn primary block-btn" id="btnCopyOffer"><i data-lucide="copy"></i> Code copy karo</button>
+          </div>
+          <div class="block">
+            <div class="block-head"><span class="bt">MITRA NO REPLY CODE</span></div>
+            <textarea class="code" id="answerIn" spellcheck="false" placeholder="Mitra pasethi aavto V1… reply code ha"></textarea>
+            <button class="btn primary block-btn" id="btnAcceptAnswer"><i data-lucide="log-in"></i> Jodi do</button>
+          </div>
+        </div>
+
+        <!-- guest panel -->
+        <div id="guestPanel" hidden>
+          <div class="block">
+            <div class="block-head"><span class="bt">HOST KADHTHAYO</span><span class="bm">OFFER · V1</span></div>
+            <div class="host-chip"><i data-lucide="user-round"></i><span><b id="hostNameIn">—</b> e aa call banavi chhe</span></div>
+          </div>
+          <div class="block">
+            <div class="block-head"><span class="bt">TAMARO REPLY CODE</span><span class="bm" id="replyMeta">BANAVMA AA RAYO…</span></div>
+            <textarea class="code" id="replyOut" readonly placeholder="Code banavva aa rahyo chhe…"></textarea>
+            <button class="btn primary block-btn" id="btnCopyReply"><i data-lucide="copy"></i> Code copy karo</button>
+          </div>
+          <div class="waiting">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span id="waitText">Host ne code mokli didho? To bas raho — e nakhe etle call apne aap judai jaashe.</span>
+          </div>
+        </div>
+
+        <!-- diagnostics -->
+        <div class="block">
+          <div class="block-head"><span class="bt">CONNECTION LOG</span><span class="bm" id="diagPair">PAIR: —</span></div>
+          <div class="diag" id="diagLog"></div>
+          <p class="diag-legend">host↔host = same network · srflx/prflx = STUN (alag network) · relay = TURN relay</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALL ================= -->
+  <section class="screen call" id="callScreen" hidden>
+    <div id="stage">
+      <video id="remoteVideo" autoplay playsinline></video>
+
+      <div class="stage-empty" id="stageEmpty">
+        <div class="spinner"></div>
+        <p id="stageEmptyText">JUDAI AA RAYI CHHE…</p>
+      </div>
+      <div class="remote-avatar" id="remoteAvatar" style="display:none">
+        <span class="ra-in" id="raInitials">?</span>
+        <span class="ra-name" id="raName">MITRA</span>
+      </div>
+
+      <div class="peer-pill" id="peerPill">
+        <span class="dot"></span>
+        <span class="name" id="peerName">Mitra</span>
+        <span class="bars" id="peerBars"><i></i><i></i><i></i></span>
+      </div>
+
+      <div class="pip" id="pip">
+        <video id="localVideo" class="mirror" muted autoplay playsinline></video>
+        <div class="pip-off" id="pipOff">?</div>
+        <span class="pip-tag" id="pipTag">તમે</span>
+      </div>
+
+      <div class="conn-banner" id="connBanner" hidden>
+        <i data-lucide="triangle-alert"></i><span id="connBannerText"></span>
+      </div>
+    </div>
+
+    <header class="topbar">
+      <div class="tb-left">
+        <span class="tb-mark guj">વાતો<b>।</b></span>
+        <span class="chip">P2P</span>
+        <span class="rec-chip" id="recChip" hidden><span class="rdot"></span><span id="recTime">00:00</span></span>
+      </div>
+      <div class="call-status" id="callStatus">
+        <span class="dot live" id="statusDot"></span>
+        <span id="statusLabel">LIVE</span>
+        <span class="sep"></span>
+        <span id="cTimer">00:00</span>
+      </div>
+      <div class="tb-right">
+        <span class="latency-chip good" id="cLatency" hidden>— ms</span>
+        <button class="icon-btn" id="btnFull" data-tip="Fullscreen [F]" aria-label="Fullscreen"><i data-lucide="maximize"></i></button>
+      </div>
+    </header>
+
+    <aside class="chat" id="chatPanel">
+      <div class="chat-head">
+        <span>CHAT · <span id="dcState">—</span></span>
+        <button class="icon-btn" id="chatClose" aria-label="Chat bandh karo"><i data-lucide="x"></i></button>
+      </div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="typing" id="typing"></div>
+      <form class="chat-form" id="chatForm">
+        <input id="chatIn" placeholder="Pehla jodo…" maxlength="500" autocomplete="off" enterkeyhint="send"/>
+        <button type="submit" aria-label="Moklo"><i data-lucide="send"></i></button>
+      </form>
+    </aside>
+
+    <nav class="controls" aria-label="Call controls">
+      <button class="ctl" id="btnMic" data-tip="Mic bandh karo [M]" aria-label="Mic"><i data-lucide="mic"></i></button>
+      <button class="ctl" id="btnCam" data-tip="Camera bandh karo [V]" aria-label="Camera"><i data-lucide="video"></i></button>
+      <button class="ctl" id="btnShare" data-tip="Screen share [S]" aria-label="Screen share"><i data-lucide="monitor-up"></i></button>
+      <button class="ctl" id="btnChat" data-tip="Chat [C]" aria-label="Chat"><i data-lucide="message-square"></i><span class="badge" id="chatBadge" hidden>0</span></button>
+      <button class="ctl" id="btnRec" data-tip="Call record karo" aria-label="Record"><i data-lucide="circle"></i></button>
+      <button class="ctl danger" id="btnEnd" data-tip="Call bandh karo" aria-label="End call"><i data-lucide="phone-off"></i></button>
+    </nav>
+  </section>
+
+  <!-- ================= SELF-TEST OVERLAY ================= -->
+  <div class="test-overlay" id="testOverlay" hidden>
+    <div class="test-panel">
+      <div class="test-head">
+        <span class="bt">LOOPBACK SELF-TEST · EKLE J BROWSER MA</span>
+        <button class="icon-btn" id="testClose" aria-label="Bandh karo"><i data-lucide="x"></i></button>
+      </div>
+      <video id="testVideo" autoplay playsinline muted></video>
+      <div class="t-rows">
+        <div class="t-row" id="trIce"><span class="t-ic"><i data-lucide="loader-circle" class="spin"></i></span><span class="t-lb">ICE connection</span><span class="t-st">RAHYO JAVO…</span></div>
+        <div class="t-row" id="trDc"><span class="t-ic"><i data-lucide="loader-circle" class="spin"></i></span><span class="t-lb">Data channel (chat)</span><span class="t-st">RAHYO JAVO…</span></div>
+        <div class="t-row" id="trMedia"><span class="t-ic"><i data-lucide="loader-circle" class="spin"></i></span><span class="t-lb">Media stream</span><span class="t-st">RAHYO JAVO…</span></div>
+      </div>
+      <div class="diag test-log" id="testLog"></div>
+      <div class="tv" id="testVerdict">Ekle j browser ma be connection banavi ne check karva aa rahyo chhe…</div>
+    </div>
+  </div>
+
+  <div id="toasts" role="status"></div>
+</main>
+
+<script>
+/* ================================================================
+   વાતો (Vaato) — server-less P2P video call
+   WebRTC + code-ritual SDP handshan + canvas-composited recording
+   ================================================================ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials = n => (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase() || '?';
+const fmtDur = s => { s=Math.max(0,s|0); const h=s/3600|0, m=(s%3600)/60|0, x=s%60;
+  return (h? h+':'+String(m).padStart(2,'0') : String(m).padStart(2,'0')) + ':' + String(x).padStart(2,'0'); };
+const fmtBytes = b => { if(!b) return '0 B'; const u=['B','KB','MB','GB']; let i=0,n=b;
+  while(n>=1024 && i<3){ n/=1024; i++; } return (i? n.toFixed(1):n)+' '+u[i]; };
+function refreshIcons(){ try{ window.lucide && lucide.createIcons(); }catch(e){} }
+
+/* ---------- element refs ---------- */
+const landing=$('landing'), nameInput=$('nameInput'), btnHost=$('btnHost'), btnGuest=$('btnGuest'),
+  guestCodeWrap=$('guestCodeWrap'), guestCodeIn=$('guestCodeIn'), btnJoin=$('btnJoin'), codeErr=$('codeErr'),
+  connect=$('connect'), cBack=$('cBack'), cMode=$('cMode'), spDot=$('spDot'), spText=$('spText'),
+  previewVideo=$('previewVideo'), previewName=$('previewName'), hostPanel=$('hostPanel'), guestPanel=$('guestPanel'),
+  offerOut=$('offerOut'), offerMeta=$('offerMeta'), btnCopyOffer=$('btnCopyOffer'),
+  answerIn=$('answerIn'), btnAcceptAnswer=$('btnAcceptAnswer'),
+  hostNameIn=$('hostNameIn'), replyOut=$('replyOut'), replyMeta=$('replyMeta'), btnCopyReply=$('btnCopyReply'),
+  diagLog=$('diagLog'), diagPair=$('diagPair'),
+  callScreen=$('callScreen'), stage=$('stage'), remoteVideo=$('remoteVideo'),
+  stageEmpty=$('stageEmpty'), stageEmptyText=$('stageEmptyText'),
+  remoteAvatar=$('remoteAvatar'), raInitials=$('raInitials'), raName=$('raName'),
+  peerPill=$('peerPill'), peerNameEl=$('peerName'), peerBarsEls=[...$('peerBars').children],
+  pip=$('pip'), localVideo=$('localVideo'), pipOff=$('pipOff'), pipTag=$('pipTag'),
+  connBanner=$('connBanner'), connBannerText=$('connBannerText'),
+  statusDot=$('statusDot'), statusLabel=$('statusLabel'), cTimer=$('cTimer'), cLatency=$('cLatency'), btnFull=$('btnFull'),
+  recChip=$('recChip'), recTime=$('recTime'),
+  chatPanel=$('chatPanel'), chatClose=$('chatClose'), chatMsgs=$('chatMsgs'), typingEl=$('typing'),
+  chatForm=$('chatForm'), chatIn=$('chatIn'), chatBadge=$('chatBadge'), dcState=$('dcState'),
+  btnMute=$('btnMute'), btnCam=$('btnCam'), btnShare=$('btnShare'), btnChat=$('btnChat'),
+  btnRec=$('btnRec'), btnEnd=$('btnEnd'),
+  meterBars=[...$('previewMeter').children],
+  btnSelfTest=$('btnSelfTest'), testOverlay=$('testOverlay'), testVideo=$('testVideo'),
+  testLog=$('testLog'), testVerdict=$('testVerdict'), testClose=$('testClose');
+
+/* ---------- state ---------- */
+const S = {
+  name:'', peerName:'Mitra', mode:null,
+  pc:null, dc:null, localStream:null, shareStream:null, remoteStream:null,
+  camTrack:null, micTrack:null, camOn:true, micOn:true, sharing:false,
+  cand:{host:0, srflx:0, relay:0, total:0},
+  callStarted:false, startTime:0, timerInt:null, latencyInt:null, remoteCheck:null, discT:null, dcWatch:null,
+  recording:false, recorder:null, recChunks:[], recBytes:0, recStart:0, recSkip:false,
+  chatOpen:false, unread:0, lastTypingSent:0, typingT:null,
+  meters:[], audioCtx:null, ending:false, endingNow:false,
+};
+
+/* ================= toasts ================= */
+const TOAST_ICON = { info:'info', ok:'circle-check', warn:'triangle-alert', err:'circle-alert' };
+function toast(msg, kind='info', ms=3400){
+  const el=document.createElement('div');
+  el.className='toast '+kind;
+  el.innerHTML=`<i data-lucide="${TOAST_ICON[kind]||'info'}"></i><span>${esc(msg)}</span>
+    <button class="t-x" aria-label="Bandh"><i data-lucide="x"></i></button>`;
+  $('toasts').appendChild(el); refreshIcons();
+  const kill=()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),260); };
+  el.querySelector('.t-x').onclick=kill;
+  setTimeout(kill, ms);
+}
+
+/* ================= helpers ================= */
+function showScreen(id){ ['landing','connect','callScreen'].forEach(s=>$(s).hidden = (s!==id)); }
+function setBtnIcon(btn,name){ btn.innerHTML=`<i data-lucide="${name}"></i>`; refreshIcons(); }
+function setBusy(btn,on,label){
+  if(on){ btn.dataset.orig=btn.innerHTML; btn.disabled=true;
+    btn.innerHTML=`<i data-lucide="loader-circle" class="spin"></i> ${label||'Rahyo javo…'}`; }
+  else if(btn.dataset.orig){ btn.disabled=false; btn.innerHTML=btn.dataset.orig; }
+  refreshIcons();
+}
+async function copyText(txt){
+  let ok=false;
+  try{ await navigator.clipboard.writeText(txt); ok=true; }catch(e){}
+  if(!ok){
+    try{
+      const ta=document.createElement('textarea'); ta.value=txt;
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      ok=document.execCommand('copy'); ta.remove();
+    }catch(e){}
+  }
+  if(ok) toast('Code copy thayo — mitra ne mokli do','ok');
+  else toast('Copy nathi thatu — code par click kari ne Ctrl+A / Ctrl+C karo','warn',5000);
+}
+
+/* ================= sounds ================= */
+function ensureAudioCtx(){
+  if(!S.audioCtx){ try{ S.audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(S.audioCtx && S.audioCtx.state==='suspended') S.audioCtx.resume().catch(()=>{});
+  return S.audioCtx;
+}
+function tone(freq, t0, dur, gain){
+  const ctx=ensureAudioCtx(); if(!ctx) return;
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  const t=ctx.currentTime+t0;
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(gain,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+dur+0.05);
+}
+const chime=()=>{ tone(659.25,0,.5,.14); tone(880,0.13,.55,.14); };
+const blip =()=>{ tone(540,0,.12,.06); };
+
+/* ================= code encode/decode ================= */
+function bytesToB64(bytes){
+  let bin=''; const CH=0x8000;
+  for(let i=0;i<bytes.length;i+=CH) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH));
+  return btoa(bin);
+}
+function b64ToBytes(b64){
+  const bin=atob(b64), bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+async function streamGzip(bytes, mode){
+  const cs=new (mode==='c'?window.CompressionStream:window.DecompressionStream)('gzip');
+  const out=new Blob([bytes]).stream().pipeThrough(cs);
+  return new Uint8Array(await new Response(out).arrayBuffer());
+}
+async function encodePayload(obj){
+  const bytes=new TextEncoder().encode(JSON.stringify(obj));
+  if(window.CompressionStream){
+    try{ return 'V1.'+bytesToB64(await streamGzip(bytes,'c')); }catch(e){}
+  }
+  return 'V0.'+bytesToB64(bytes);
+}
+async function decodePayload(code){
+  code=String(code||'').trim().replace(/\s+/g,'');
+  const m=/^V([01])\.(\S+)$/.exec(code);
+  if(!m || m[2].length<40) throw new Error('bad code');
+  let bytes=b64ToBytes(m[2]);
+  if(m[1]==='1'){
+    if(!window.DecompressionStream) throw new Error('no gunzip');
+    bytes=await streamGzip(bytes,'d');
+  }
+  const p=JSON.parse(new TextDecoder().decode(bytes));
+  if(!p || !p.sdp || typeof p.sdp.sdp!=='string') throw new Error('bad payload');
+  return p;
+}
+
+/* ================= ICE configuration ================= */
+const ICE={iceServers:[
+  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},
+  {urls:'stun:stun.cloudflare.com:3478'},
+  {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject', credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject'}
+]};
+
+function waitForIce(pc, timeout=6000){
+  if(pc.iceGatheringState==='complete') return Promise.resolve();
+  return new Promise(res=>{
+    let fin=false;
+    const done=()=>{ if(fin) return; fin=true; cleanup(); res(); };
+    const onCand=e=>{ if(!e.candidate) done(); };
+    const chk=()=>{ if(pc.iceGatheringState==='complete') done(); };
+    const t=setTimeout(done,timeout);
+    function cleanup(){ clearTimeout(t); pc.removeEventListener('icecandidate',onCand); pc.removeEventListener('icegatheringstatechange',chk); }
+    pc.addEventListener('icecandidate',onCand);
+    pc.addEventListener('icegatheringstatechange',chk);
+  });
+}
+
+const isMediaErr=e=>!!e && ['NotAllowedError','NotFoundError','NotReadableError','OverconstrainedError','SecurityError','NoMediaDevices'].includes(e.name);
+
+/* ================= connection log ================= */
+function diag(msg){
+  const t=new Date().toLocaleTimeString([], {hour12:false});
+  const d=document.createElement('div');
+  d.textContent=`[${t}] ${msg}`;
+  diagLog.appendChild(d);
+  while(diagLog.children.length>140) diagLog.firstChild.remove();
+  diagLog.scrollTop=diagLog.scrollHeight;
+  console.log('[vaato]',msg);
+}
+function clearDiag(){ diagLog.innerHTML=''; diagPair.textContent='PAIR: —'; }
+
+async function logPair(){
+  if(!S.pc) return '';
+  try{
+    const stats=await S.pc.getStats();
+    let pair=null; const cands={};
+    stats.forEach(r=>{ cands[r.id]=r;
+      if(r.type==='candidate-pair' && r.state==='succeeded' && (r.nominated||r.selected) && !pair) pair=r; });
+    if(!pair) stats.forEach(r=>{ if(r.type==='candidate-pair' && r.state==='succeeded' && !pair) pair=r; });
+    if(!pair) return '';
+    const l=cands[pair.localCandidateId], rr=cands[pair.remoteCandidateId];
+    if(!l||!rr) return '';
+    const s=`${l.candidateType}${l.protocol?'/'+l.protocol:''} ↔ ${rr.candidateType}${rr.protocol?'/'+rr.protocol:''}`;
+    diag('PAIR: '+s);
+    diagPair.textContent='PAIR: '+s;
+    return s;
+  }catch(e){ return ''; }
+}
+
+/* ================= media ================= */
+async function getMedia(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+    throw Object.assign(new Error('no mediaDevices'),{name:'NoMediaDevices'});
+  try{
+    return await navigator.mediaDevices.getUserMedia({
+      video:{width:{ideal:1280},height:{ideal:720}}, audio:true
+    });
+  }catch(e){
+    try{ const s=await navigator.mediaDevices.getUserMedia({audio:true});
+      toast('Camera nathi malyo — avaz thi j chalsu','warn',4500); return s; }catch(_){}
+    try{ const s=await navigator.mediaDevices.getUserMedia({video:true});
+      toast('Mic nathi malyo — video mute j rahse','warn',4500); return s; }catch(_){}
+    throw e;
+  }
+}
+function localStreamAttach(){
+  previewVideo.srcObject=S.localStream;
+  localVideo.srcObject=S.localStream;
+  localVideo.classList.add('mirror');
+}
+function mediaFail(err){
+  console.warn(err);
+  let msg='Camera/mic nathi khulti — permission aapi ne fari try karo.';
+  if(err && (err.name==='NotFoundError'||err.name==='DevicesNotFoundError'))
+    msg='Camera ke mic maalyo j nathi — device jodo ane page reload karo.';
+  if(err && (err.name==='NotAllowedError'||err.name==='PermissionDeniedError'))
+    msg='Permission block chhe — browser na address bar mathi camera-mic allow karo.';
+  if(err && err.name==='NoMediaDevices')
+    msg='Camera chalavva HTTPS ke localhost joie. File ne double-click kari Chrome ma kholo, ke GitHub Pages par mukho.';
+  toast(msg,'err',7000);
+  killAll(); resetConnectUI(); showScreen('landing');
+}
+
+/* ================= audio meters ================= */
+function attachMeter(stream, kind){
+  if(!stream) return;
+  if(S.meters.some(m=>m.kind===kind)) return;
+  const at=stream.getAudioTracks()[0]; if(!at) return;
+  try{
+    const ctx=ensureAudioCtx(); if(!ctx) return;
+    const src=ctx.createMediaStreamSource(new MediaStream([at]));
+    const an=ctx.createAnalyser(); an.fftSize=512;
+    src.connect(an);
+    S.meters.push({kind, an, buf:new Uint8Array(an.fftSize)});
+  }catch(e){}
+}
+setInterval(()=>{
+  if(!S.meters.length) return;
+  for(const m of S.meters){
+    m.an.getByteTimeDomainData(m.buf);
+    let peak=0;
+    for(let i=0;i<m.buf.length;i+=4){ const d=Math.abs(m.buf[i]-128); if(d>peak) peak=d; }
+    const lvl=Math.min(1, peak/48);
+    if(m.kind==='self'){
+      meterBars.forEach((b,i)=>b.style.transform=`scaleY(${(0.15+lvl*(0.95-i*0.14)).toFixed(2)})`);
+      if(pip) pip.classList.toggle('speaking', lvl>0.14);
+    }else{
+      peerBarsEls.forEach((b,i)=>b.style.transform=`scaleY(${(0.15+lvl*(0.95-i*0.14)).toFixed(2)})`);
+      peerPill.classList.toggle('speaking', lvl>0.14);
+    }
+  }
+}, 90);
+
+/* ================= peer connection ================= */
+function buildPc(){
+  const pc=new RTCPeerConnection(ICE);
+  S.pc=pc;
+  S.cand={host:0, srflx:0, relay:0, total:0};
+  let peerMeterDone=false;
+
+  pc.onicecandidate=e=>{
+    if(e.candidate){
+      S.cand.total++;
+      const m=/typ (host|srflx|relay)/.exec(e.candidate.candidate);
+      if(m) S.cand[m[1]]++;
+    }else{
+      diag(`ICE gathering puro — ${S.cand.total} candidates (host ${S.cand.host} · srflx ${S.cand.srflx} · relay ${S.cand.relay})`);
+    }
+  };
+  pc.addEventListener('icecandidateerror',e=>{
+    diag(`ICE server error ${e.errorCode}${e.url?' · '+e.url:''}${e.errorText?' · '+e.errorText:''}`);
+  });
+  pc.oniceconnectionstatechange=()=>{
+    const st=pc.iceConnectionState;
+    diag('ICE-STATE: '+st);
+    if(st==='failed') onConn('failed');
+  };
+
+  pc.ontrack=e=>{
+    /* FIX: potanu composed stream banavu — badha tracks (audio+video) ek j
+       stream ma aave, recording/meters mate ekdum reliable */
+    if(!S.remoteStream) S.remoteStream=new MediaStream();
+    if(!S.remoteStream.getTracks().includes(e.track)) S.remoteStream.addTrack(e.track);
+    remoteVideo.srcObject=S.remoteStream;
+    remoteVideo.play().catch(()=>{});
+    diag('REMOTE TRACK aavi: '+e.track.kind+(e.track.label?' · '+e.track.label:''));
+    if(!peerMeterDone){ peerMeterDone=true; attachMeter(S.remoteStream,'peer'); }
+  };
+  if(S.mode==='host'){ S.dc=pc.createDataChannel('vaato'); bindDc(); }
+  else pc.ondatachannel=e=>{ S.dc=e.channel; bindDc(); };
+  pc.onconnectionstatechange=()=>onConn(pc.connectionState);
+  diag('RTCPeerConnection banavi — ICE servers: '+ICE.iceServers.length);
+  return pc;
+}
+function bindDc(){
+  S.dc.onopen=()=>{
+    diag('Data channel khuli gayi');
+    dcState.textContent='OPEN'; dcState.className='ok';
+    dcSend({t:'meta', name:S.name});
+    chatIn.disabled=false; chatIn.placeholder='Message likho…';
+  };
+  S.dc.onmessage=e=>{ try{ handleMsg(JSON.parse(e.data)); }catch(_){} };
+  S.dc.onclose=()=>{
+    chatIn.disabled=true; chatIn.placeholder='Connect nathi…';
+    dcState.textContent='CLOSED'; dcState.className='bad';
+    if(S.callStarted && !S.ending){
+      S.ending=true;
+      toast(`${S.peerName} call chhodhi gayo`,'warn');
+      setTimeout(()=>{ endCall(); S.ending=false; }, 900);
+    }
+  };
+}
+const dcSend=o=>{ try{ S.dc && S.dc.readyState==='open' && S.dc.send(JSON.stringify(o)); }catch(e){} };
+
+function onConn(st){
+  diag('CONN: '+st);
+  if(!S.callStarted){
+    if(st==='connected'){ enterCall(); }
+    else if(st==='failed'){
+      setStatusPill('bad','JUDAI FAIL');
+      setStep(3,'bad');
+      diag('JUDAI FAIL — niche tips: VPN bandh karo, banni ekle j network par test karo, FRESH code thi fari try karo');
+      toast('Judai nathi thati. (1) VPN/adblock bandh karo (2) Banni ek j computer na be tabs ma test karo (3) Banni taraph BACK → fresh code thi fari try karo','err',9000);
+    }
+  }else{
+    if(st==='connected'){ connBanner.hidden=true; setCallStatus('live'); clearTimeout(S.discT); }
+    else if(st==='disconnected'){
+      setCallStatus('weak');
+      connBannerText.textContent='Signal narm padyo — apne aapne vapar thi punh jodva prayas chhe…';
+      connBanner.hidden=false;
+      clearTimeout(S.discT);
+      S.discT=setTimeout(()=>{ if(S.pc && S.pc.connectionState!=='connected') endCall(); },7000);
+    }
+    else if(st==='failed'){ setCallStatus('lost'); endCall(); }
+  }
+}
+
+/* ================= chat ================= */
+function handleMsg(m){
+  if(m.t==='meta'){ if(m.name) setPeerName(m.name); }
+  else if(m.t==='chat'){
+    addMsg(S.peerName, m.text, 'peer');
+    if(!S.chatOpen){ S.unread++; updateBadge(); }
+    blip();
+  }
+  else if(m.t==='typing'){
+    typingEl.textContent=`${S.peerName} lakhi rahya chhe…`;
+    typingEl.classList.add('show');
+    clearTimeout(S.typingT);
+    S.typingT=setTimeout(()=>{ typingEl.textContent=''; typingEl.classList.remove('show'); },2200);
+  }
+}
+function addMsg(name,text,who){
+  const t=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const div=document.createElement('div');
+  div.className='msg '+who;
+  div.innerHTML=`<div class="m-top"><b>${esc(name)}</b><time>${t}</time></div><p>${esc(text)}</p>`;
+  chatMsgs.appendChild(div);
+  chatMsgs.scrollTop=chatMsgs.scrollHeight;
+}
+function updateBadge(){
+  chatBadge.textContent=S.unread>9?'9+':S.unread;
+  chatBadge.hidden=!S.unread;
+}
+chatForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const text=chatIn.value.trim();
+  if(!text) return;
+  if(!S.dc || S.dc.readyState!=='open'){ toast('Chat channel haju nathi khuli — upar Chat·OPEN dekhase etle j moklse','warn',4000); return; }
+  dcSend({t:'chat', text});
+  addMsg(S.name||'Tum', text, 'me');
+  chatIn.value='';
+});
+chatIn.addEventListener('input',()=>{
+  const now=Date.now();
+  if(now-(S.lastTypingSent||0)>1400){ S.lastTypingSent=now; dcSend({t:'typing'}); }
+});
+function toggleChat(force){
+  S.chatOpen = force!==undefined ? force : !S.chatOpen;
+  chatPanel.classList.toggle('open',S.chatOpen);
+  btnChat.classList.toggle('on',S.chatOpen);
+  if(S.chatOpen){ S.unread=0; updateBadge(); setTimeout(()=>chatIn.focus(),150); }
+}
+btnChat.addEventListener('click',()=>toggleChat());
+chatClose.addEventListener('click',()=>toggleChat(false));
+
+/* ================= steps + connect UI ================= */
+const STEP_TEXT={
+  host:[
+    ['Aa code mitra ne moklo','Copy kari ne WhatsApp, Telegram, email — jya hoy tyathi mokli do. Ekle j code pucho chhe.'],
+    ['Reply code lo','Mitra pasethi “reply code” aavshe — neeche paste karo ane “Jodi do” thicho.'],
+    ['Jodi jao','Code sacho malya pachhi connection kahee second ma judase. Neeche CONNECTION log ma progress juo.']
+  ],
+  guest:[
+    ['Host no code malyo','Offer saro vanchai gayo — hu j e call ma judis.'],
+    ['Reply code mokli do','Neeche na code copy kari ne host ne pathavi do.'],
+    ['Rahyi jao','Host code nakhe etle call apne aap judai jaashe. Neeche CONNECTION log ma progress juo.']
+  ]
+};
+function setStep(n,state){
+  const el=$('step'+n);
+  el.classList.remove('active','done','bad');
+  if(state) el.classList.add(state);
+  el.querySelector('.s-num').innerHTML = state==='done'
+    ? '<i data-lucide="check"></i>'
+    : state==='bad' ? '<i data-lucide="x"></i>' : String(n).padStart(2,'0');
+  refreshIcons();
+}
+function setStatusPill(kind,text){ spDot.className='sp-dot '+kind; spText.textContent=text; }
+function initConnectScreen(mode){
+  showScreen('connect');
+  S.mode=mode;
+  cMode.textContent = mode==='host' ? 'HOST' : 'GUEST';
+  hostPanel.hidden = mode!=='host';
+  guestPanel.hidden = mode!=='guest';
+  const txt=STEP_TEXT[mode];
+  [1,2,3].forEach(n=>{
+    const el=$('step'+n);
+    el.querySelector('h3').textContent=txt[n-1][0];
+    el.querySelector('p').textContent=txt[n-1][1];
+    setStep(n,null);
+  });
+  if(mode==='host'){ setStep(1,'active'); setStatusPill('amber','CODE BANAVMA AA RAYO…'); }
+  else{ setStep(1,'done'); setStep(2,'active'); setStatusPill('amber','REPLY BANAVMA AA RAYO…'); }
+  previewName.textContent=S.name||'—';
+  clearDiag();
+  diag('Mode: '+mode.toUpperCase());
+  previewVideo.play().catch(()=>{});
+}
+
+/* ================= flows ================= */
+function saveName(){ try{ localStorage.setItem('vaato-name',S.name); }catch(e){} }
+
+/* --- host: navu call --- */
+btnHost.addEventListener('click', async ()=>{
+  S.name=(nameInput.value||'').trim()||'Host'; saveName();
+  setBusy(btnHost,true,'Camera kholva aa rahyo…');
+  try{
+    S.localStream=await getMedia();
+    S.camTrack=S.localStream.getVideoTracks()[0]||null;
+    S.micTrack=S.localStream.getAudioTracks()[0]||null;
+    localStreamAttach();
+    initConnectScreen('host');
+    diag(`Media taiyar — video: ${S.camTrack?'ha':'nathi'} · audio: ${S.micTrack?'ha':'nathi'}`);
+    buildPc();
+    S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
+    diag('Offer banavi aa rahyo…');
+    const offer=await S.pc.createOffer();
+    await S.pc.setLocalDescription(offer);
+    diag('ICE gathering shuru…');
+    await waitForIce(S.pc, 6000);
+    if(S.pc.iceGatheringState!=='complete')
+      diag(`ICE wait samay puro thay gayo — je ${S.cand.total} candidates malya e sathi code banavyo`);
+    if(S.cand.total===0){
+      diag('KHARAB: ek pan ICE candidate nathi malyo — VPN/firewall STUN block karto lage chhe');
+      toast('Network thi ek pan ICE candidate nathi malyo — VPN bandh kari ne fari try karo','err',7000);
+    }
+    const code=await encodePayload({v:1, role:'host', name:S.name,
+      sdp:{type:'offer', sdp:S.pc.localDescription.sdp}});
+    offerOut.value=code;
+    offerMeta.textContent=`${S.cand.total} CAND · ${code.length} CH · V1`;
+    setStep(1,'done'); setStep(2,'active');
+    setStatusPill('ok','INVITE TAIYAR');
+    attachMeter(S.localStream,'self');
+    diag(`Invite code taiyar (${code.length} chars) — mitra ne moklo`);
+  }catch(err){
+    if(isMediaErr(err)) mediaFail(err);
+    else{ console.error(err); toast('Khoti aavi: '+(err.message||err.name),'err',5000);
+      killAll(); resetConnectUI(); showScreen('landing'); }
+  }finally{ setBusy(btnHost,false); }
+});
+
+/* --- host: reply code accept --- */
+btnAcceptAnswer.addEventListener('click', async ()=>{
+  if(!S.pc){ toast('Pehla call banavo','warn'); return; }
+  let p;
+  try{ p=await decodePayload(answerIn.value); }
+  catch(e){ toast('Reply code vanchai nathi gayo — pucho code fari paste karo','err'); return; }
+  if(p.role!=='guest'){ toast('Aa guest no reply code nathi lage — tamara j invite code to nathi?','err'); return; }
+  if(p.sdp.type!=='answer'){ toast('Aa answer code nathi lage — offer to guest pase jodo joie','err'); return; }
+  setBusy(btnAcceptAnswer,true,'Jodva aa rahyo…');
+  try{
+    if(p.name) setPeerName(p.name);
+    await S.pc.setRemoteDescription(p.sdp);
+    diag('Reply code accept thayo — ICE checks shuru');
+    setStep(2,'done'); setStep(3,'active');
+    setStatusPill('amber','JUDVAMA AA RAYO…');
+    toast('Code sacho chhe — judai aa rahi chhe','ok');
+    answerIn.value='';
+  }catch(e){
+    console.error(e);
+    diag('Answer set nathi thato: '+(e.message||e.name));
+    toast('Answer set nathi thato — junu/juthu code lage chhe. Guest ne fari fresh reply moklvava kaho','err',6000);
+  }finally{ setBusy(btnAcceptAnswer,false); }
+});
+answerIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); btnAcceptAnswer.click(); } });
+
+/* --- guest: code thi jodo --- */
+btnJoin.addEventListener('click', async ()=>{
+  codeErr.textContent='';
+  let payload;
+  try{ payload=await decodePayload(guestCodeIn.value); }
+  catch(e){ codeErr.textContent='Code vanchai nathi gayo — pucho code fari paste karo. (V1. thi shuru thato, pucho aavo joie.)'; return; }
+  if(payload.role!=='host'){ codeErr.textContent='Aa host no offer code nathi lage. (Reply code to nathi?)'; return; }
+  if(payload.sdp.type!=='offer'){ codeErr.textContent='Code ma offer nathi lage — pucho code fari check karo.'; return; }
+  S.name=(nameInput.value||'').trim()||'Guest'; saveName();
+  S.mode='guest';
+  setBusy(btnJoin,true,'Camera kholva aa rahyo…');
+  try{
+    S.localStream=await getMedia();
+    S.camTrack=S.localStream.getVideoTracks()[0]||null;
+    S.micTrack=S.localStream.getAudioTracks()[0]||null;
+    localStreamAttach();
+    initConnectScreen('guest');
+    diag(`Media taiyar — video: ${S.camTrack?'ha':'nathi'} · audio: ${S.micTrack?'ha':'nathi'}`);
+    hostNameIn.textContent=payload.name||'Host';
+    if(payload.name) setPeerName(payload.name);
+    diag('Offer accept thayo — host: '+(payload.name||'Host'));
+    buildPc();
+    S.localStream.getTracks().forEach(t=>S.pc.addTrack(t,S.localStream));
+    await S.pc.setRemoteDescription(payload.sdp);
+    diag('Answer banavi aa rahyo…');
+    const answer=await S.pc.createAnswer();
+    await S.pc.setLocalDescription(answer);
+    diag('ICE gathering shuru…');
+    await waitForIce(S.pc, 6000);
+    if(S.pc.iceGatheringState!=='complete')
+      diag(`ICE wait samay puro thay gayo — je ${S.cand.total} candidates malya e sathi code banavyo`);
+    if(S.cand.total===0){
+      diag('KHARAB: ek pan ICE candidate nathi malyo — VPN/firewall STUN block karto lage chhe');
+      toast('Network thi ek pan ICE candidate nathi malyo — VPN bandh kari ne fari try karo','err',7000);
+    }
+    const code=await encodePayload({v:1, role:'guest', name:S.name,
+      sdp:{type:'answer', sdp:S.pc.localDescription.sdp}});
+    replyOut.value=code;
+    replyMeta.textContent=`${S.cand.total} CAND · ${code.length} CH · V1`;
+    setStep(2,'done'); setStep(3,'active');
+    setStatusPill('ok','REPLY TAIYAR');
+    attachMeter(S.localStream,'self');
+    diag(`Reply code taiyar (${code.length} chars) — host ne moklo`);
+  }catch(err){
+    if(isMediaErr(err)) mediaFail(err);
+    else{ console.error(err); toast('Offer set nathi thato — code junu lage chhe? Fari FRESH code lo','err',6000);
+      killAll(); resetConnectUI(); showScreen('landing'); }
+  }finally{ setBusy(btnJoin,false); }
+});
+guestCodeIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); btnJoin.click(); } });
+
+/* --- landing: guest box reveal --- */
+btnGuest.addEventListener('click',()=>{
+  const open=guestCodeWrap.classList.toggle('open');
+  btnGuest.classList.toggle('on',open);
+  if(open) setTimeout(()=>guestCodeIn.focus(),200);
+});
+
+/* --- copy buttons --- */
+function bindCopy(btn, ta){
+  btn.addEventListener('click', async ()=>{
+    if(!ta.value){ toast('Haju code nathi banyo','warn'); return; }
+    await copyText(ta.value);
+    const old=btn.innerHTML;
+    btn.innerHTML='<i data-lucide="check"></i> Copy thayo';
+    btn.classList.add('done'); refreshIcons();
+    setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove('done'); refreshIcons(); },1700);
+  });
+}
+bindCopy(btnCopyOffer, offerOut);
+bindCopy(btnCopyReply, replyOut);
+[offerOut,replyOut].forEach(ta=>ta.addEventListener('click',()=>ta.select()));
+
+/* ================= call screen ================= */
+function setCallStatus(st){
+  statusDot.className='dot '+st;
+  statusLabel.textContent = st==='live' ? 'LIVE' : st==='weak' ? 'SIGNAL NARM' : 'CONNECT TOOTO';
+}
+function setPeerName(n){
+  S.peerName=n||S.peerName;
+  peerNameEl.textContent=S.peerName;
+  raName.textContent=S.peerName.toUpperCase();
+  raInitials.textContent=initials(S.peerName);
+}
+function hideStageEmpty(){
+  stageEmpty.classList.add('gone');
+  setTimeout(()=>{ stageEmpty.style.display='none'; },700);
+}
+remoteVideo.addEventListener('playing',()=>{ if(remoteVideo.videoWidth>0) hideStageEmpty(); });
+
+function enterCall(){
+  if(S.callStarted) return;
+  S.callStarted=true;
+  showScreen('callScreen');
+  S.startTime=Date.now();
+  clearInterval(S.timerInt);  S.timerInt=setInterval(tick,1000);
+  clearInterval(S.latencyInt); S.latencyInt=setInterval(pollLatency,3000);
+  S.remoteCheck=setInterval(()=>{
+    if(remoteVideo.videoWidth>0){ remoteAvatar.style.display='none'; hideStageEmpty(); }
+    else if(Date.now()-S.startTime>2200){ remoteAvatar.style.display='flex'; hideStageEmpty(); }
+  },800);
+  dcState.textContent = (S.dc && S.dc.readyState==='open') ? 'OPEN' : 'WAITING…';
+  dcState.className = (S.dc && S.dc.readyState==='open') ? 'ok' : '';
+  /* dc 8 sec ma nathi khultu to spasto kaho (rare network block) */
+  clearTimeout(S.dcWatch);
+  S.dcWatch=setTimeout(()=>{
+    if(S.callStarted && (!S.dc || S.dc.readyState!=='open')){
+      dcState.textContent='BLOCKED'; dcState.className='bad';
+      toast('Chat channel network thi block lage chhe — video/avaz chale chhe, chat nahi','warn',6000);
+    }
+  },8000);
+  setCallStatus('live');
+  stageEmptyText.textContent='JUDAI THAI GAYI — VIDEO AA RAYI CHHE…';
+  chime();
+  spawnRipple();
+  updatePipVisual();
+  toast(`${S.peerName} judhi gayo — vaato shuru!`,'ok');
+  setTimeout(async ()=>{
+    const p=await logPair();
+    if(p && !S.endingNow) toast('Route: '+p,'info',4000);
+  },1000);
+  tick();
+}
+function spawnRipple(){
+  for(let i=0;i<2;i++){
+    const d=document.createElement('div');
+    d.className='ripple';
+    d.style.animationDelay=(i*0.18)+'s';
+    stage.appendChild(d);
+    setTimeout(()=>d.remove(),1500);
+  }
+}
+function tick(){
+  const s=Math.floor((Date.now()-S.startTime)/1000);
+  cTimer.textContent=fmtDur(s);
+  document.title='● '+fmtDur(s)+' · વાતો';
+  if(S.recording)
+    recTime.textContent=fmtDur(Math.floor((Date.now()-S.recStart)/1000))+' · '+fmtBytes(S.recBytes);
+}
+async function pollLatency(){
+  if(!S.pc) return;
+  try{
+    const stats=await S.pc.getStats();
+    let rtt=null;
+    stats.forEach(r=>{
+      if(r.type==='candidate-pair' && r.state==='succeeded'
+        && typeof r.currentRoundTripTime==='number' && (r.nominated||r.selected)) rtt=r.currentRoundTripTime;
+    });
+    if(rtt==null) stats.forEach(r=>{
+      if(r.type==='candidate-pair' && r.state==='succeeded' && typeof r.currentRoundTripTime==='number') rtt=r.currentRoundTripTime;
+    });
+    if(rtt!=null){
+      const ms=Math.max(1,Math.round(rtt*1000));
+      cLatency.textContent=ms+' ms';
+      cLatency.className='latency-chip '+(ms<130?'good':ms<320?'fair':'bad');
+      cLatency.hidden=false;
+    }
+  }catch(e){}
+}
+
+/* --- mic / camera / pip --- */
+function currentVideoTrack(){
+  if(S.sharing){
+    const s=S.pc && S.pc.getSenders().find(x=>x.track && x.track.kind==='video');
+    return s ? s.track : null;
+  }
+  return S.camTrack;
+}
+function updatePipVisual(){
+  const hasVideo = S.sharing || (S.camTrack && S.camOn);
+  pipOff.style.display = hasVideo ? 'none' : 'flex';
+  pipOff.textContent=initials(S.name);
+  localVideo.classList.toggle('mirror', !S.sharing);
+  pipTag.textContent = S.sharing ? 'સ્ક્રીન' : 'તમે';
+}
+function toggleMic(){
+  const t=S.micTrack || (S.localStream && S.localStream.getAudioTracks()[0]);
+  if(!t){ toast('Aa call ma mic track j nathi — device ke permission nathi','warn',4000); return; }
+  S.micOn=!S.micOn;
+  t.enabled=S.micOn;
+  btnMute.classList.toggle('off',!S.micOn);
+  setBtnIcon(btnMic, S.micOn?'mic':'mic-off');
+  btnMute.dataset.tip=S.micOn?'Mic bandh karo [M]':'Mic chalu karo [M]';
+  toast(S.micOn?'Mic chalu':'Mic bandh','info',1500);
+}
+function toggleCam(){
+  const t=currentVideoTrack();
+  if(!t){ toast('Camera track nathi — device ke permission check karo','warn',4000); return; }
+  S.camOn=!S.camOn;
+  t.enabled=S.camOn;
+  btnCam.classList.toggle('off',!S.camOn);
+  setBtnIcon(btnCam, S.camOn?'video':'video-off');
+  btnCam.dataset.tip=S.camOn?'Camera bandh karo [V]':'Camera chalu karo [V]';
+  updatePipVisual();
+  toast(S.camOn?'Camera chalu':'Camera bandh','info',1500);
+}
+btnMute.addEventListener('click',toggleMic);
+btnCam.addEventListener('click',toggleCam);
+
+/* --- screen share --- */
+function blackVideoTrack(w=640,h=360,label){
+  /* camera nathi tyare placeholder frame — remote par frozen screen na dekhay */
+  try{
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const x=c.getContext('2d');
+    x.fillStyle='#14160f'; x.fillRect(0,0,w,h);
+    x.fillStyle='rgba(242,180,64,.8)';
+    x.font='600 '+Math.round(h*0.09)+'px "Space Grotesk",sans-serif';
+    x.fillText(label||'CAMERA OFF', Math.round(w*0.06), Math.round(h*0.54));
+    return c.captureStream(1).getVideoTracks()[0]||null;
+  }catch(e){ return null; }
+}
+async function toggleShare(){
+  if(!S.pc){ toast('Pehla judo pachhi','warn'); return; }
+  if(S.sharing){ await stopShare(); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    toast('Screen share aa browser/device par nathi malshe — desktop Chrome/Edge/Firefox ma j chale chhe','warn',5000);
+    return;
+  }
+  let ds;
+  try{ ds=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30}, audio:false}); }
+  catch(e){
+    if(e && e.name==='NotAllowedError') return;  /* user e pota cancel karyu */
+    toast('Screen share nathi chalu thatu: '+(e.name||'error'),'err');
+    return;
+  }
+  const track=ds.getVideoTracks()[0];
+  const sender=S.pc.getSenders().find(s=>s.track && s.track.kind==='video');
+  if(!sender){
+    ds.getTracks().forEach(t=>t.stop());
+    toast('Aa call ma video sender j nathi (camera vagar no call) — screen share nathi chute','warn',5000);
+    return;
+  }
+  try{ await sender.replaceTrack(track); }
+  catch(e){ ds.getTracks().forEach(t=>t.stop()); toast('Share moklma nathi thatu: '+e.name,'err'); return; }
+  S.shareStream=ds; S.sharing=true;
+  localVideo.srcObject=ds;
+  btnShare.classList.add('on');
+  setBtnIcon(btnShare,'monitor-x');
+  btnShare.dataset.tip='Screen share bandh karo [S]';
+  track.addEventListener('ended', ()=>stopShare());
+  updatePipVisual();
+  toast('Screen share shuru','ok');
+}
+async function stopShare(){
+  if(!S.sharing) return;
+  S.sharing=false;
+  try{
+    const sender=S.pc.getSenders().find(s=>s.track && s.track.kind==='video');
+    if(sender){
+      const back = (S.camTrack && S.camTrack.readyState==='live') ? S.camTrack : blackVideoTrack();
+      if(back) await sender.replaceTrack(back);
+    }
+  }catch(e){}
+  if(S.shareStream) S.shareStream.getTracks().forEach(t=>t.stop());
+  S.shareStream=null;
+  localVideo.srcObject=S.localStream;
+  btnShare.classList.remove('on');
+  setBtnIcon(btnShare,'monitor-up');
+  btnShare.dataset.tip='Screen share [S]';
+  updatePipVisual();
+  toast('Screen share bandh','info',1800);
+}
+btnShare.addEventListener('click',toggleShare);
+
+/* ================================================================
+   RECORDING — canvas compositor engine
+   Paheli version remote stream ne sedhi record karti — Chrome tya
+   0-byte/kali file aape chhe. Have: remote video + potanu PiP +
+   banni ni audio mix + timestamp — badhu canvas par draw thai ne
+   record thase. Frames ni guarantee, download ni guarantee.
+   ================================================================ */
+const REC = { canvas:null, ctx:null, raf:0, lastDraw:0 };
+
+function pickMime(video){
+  if(!window.MediaRecorder) return '';
+  const list = video
+    ? ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']
+    : ['audio/webm;codecs=opus','audio/webm','audio/mp4'];
+  return list.find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } }) || '';
+}
+
+/* remote video ne "cover" kari ne canvas ma draw karva nu math */
+function coverFit(vw,vh,cw,ch){
+  const sr=vw/vh, cr=cw/ch;
+  let dw,dh;
+  if(sr>cr){ dh=ch; dw=ch*sr; } else { dw=cw; dh=cw/sr; }
+  return {dx:(cw-dw)/2, dy:(ch-dh)/2, dw, dh};
+}
+
+function drawRecFrame(ts){
+  if(!REC.ctx){ REC.raf=0; return; }
+  REC.raf=requestAnimationFrame(drawRecFrame);
+  if(ts-REC.lastDraw < 33) return;   /* ~30fps cap */
+  REC.lastDraw=ts;
+  const c=REC.canvas, x=REC.ctx, W=c.width, H=c.height;
+
+  x.fillStyle='#0e0f0c'; x.fillRect(0,0,W,H);
+
+  /* mitra nu video — full frame */
+  if(remoteVideo.videoWidth>0){
+    const f=coverFit(remoteVideo.videoWidth, remoteVideo.videoHeight, W, H);
+    try{ x.drawImage(remoteVideo, f.dx, f.dy, f.dw, f.dh); }catch(e){}
+  }else{
+    x.fillStyle='rgba(242,180,64,.5)';
+    x.font='600 '+Math.round(H*0.05)+'px "Space Grotesk",sans-serif';
+    x.textAlign='center';
+    x.fillText('AUDIO ONLY', W/2, H/2);
+    x.textAlign='left';
+  }
+
+  /* potanu PiP — kona ma */
+  if(localVideo.videoWidth>0){
+    const pw=Math.round(W*0.22);
+    const ph=Math.max(2,Math.round(pw*localVideo.videoHeight/localVideo.videoWidth));
+    const px=W-pw-Math.round(W*0.02), py=H-ph-Math.round(H*0.06);
+    try{
+      x.drawImage(localVideo, px, py, pw, ph);
+      x.strokeStyle='rgba(242,180,64,.85)'; x.lineWidth=2;
+      x.strokeRect(px,py,pw,ph);
+    }catch(e){}
+  }
+
+  /* timestamp + naam + brand — halku watermark */
+  const dur=fmtDur(Math.floor((Date.now()-S.recStart)/1000));
+  const fs=Math.max(11,Math.round(H*0.028));
+  x.font='500 '+fs+'px "JetBrains Mono",monospace';
+  const tw=x.measureText(dur).width;
+  x.fillStyle='rgba(0,0,0,.5)';
+  x.fillRect(Math.round(W*0.015), Math.round(H*0.035), tw+fs*1.9, fs*1.7);
+  x.fillStyle='#f2b440';
+  x.beginPath();
+  x.arc(Math.round(W*0.015)+fs*0.7, Math.round(H*0.035)+fs*0.85, fs*0.28, 0, 6.283);
+  x.fill();
+  x.fillText(dur, Math.round(W*0.015)+fs*1.4, Math.round(H*0.035)+fs*1.2);
+  x.fillStyle='rgba(242,239,228,.7)';
+  x.fillText((S.peerName||'').toUpperCase()+' · વાતો', Math.round(W*0.015), H-Math.round(H*0.045));
+}
+
+/* banni ni avaz ek track ma mix (remote + potanu mic) */
+function buildRecAudioTrack(){
+  const rem=(S.remoteStream?S.remoteStream.getAudioTracks():[]).filter(t=>t.readyState==='live');
+  const loc=(S.localStream?S.localStream.getAudioTracks():[]).filter(t=>t.readyState==='live');
+  const all=[...rem,...loc];
+  if(!all.length) return null;
+  if(all.length===1) return {track:all[0], owned:false};   /* direct — stop nahi karvo! */
+  try{
+    const ctx=ensureAudioCtx();
+    if(!ctx) return {track:(rem[0]||all[0]), owned:false};
+    if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+    const dest=ctx.createMediaStreamDestination();
+    all.forEach(t=>{ try{ ctx.createMediaStreamSource(new MediaStream([t])).connect(dest); }catch(e){} });
+    const mt=dest.stream.getAudioTracks()[0];
+    if(mt) return {track:mt, owned:true};
+  }catch(e){}
+  return {track:(rem[0]||all[0]||null), owned:false};
+}
+
+function startRecording(){
+  if(!window.MediaRecorder){ toast('Aa browser recording support nathi aapto','warn',5000); return; }
+  if(!S.callStarted){ toast('Pehla call judvo joie','warn'); return; }
+  const live=(S.remoteStream?S.remoteStream.getTracks().filter(t=>t.readyState==='live'):[]);
+  if(!live.length){ toast('Mitra no stream haju nathi aavyo — thodi vakhat raho ane fari dabavo','warn',5000); return; }
+
+  /* canvas size — remote video na size ma (max 1280) */
+  let vw=1280, vh=720;
+  if(remoteVideo.videoWidth>0){
+    let w=remoteVideo.videoWidth, h=remoteVideo.videoHeight;
+    if(w>1280){ h=Math.round(h*1280/w); w=1280; }
+    vw=Math.max(2,w-(w%2)); vh=Math.max(2,h-(h%2));
+  }
+  REC.canvas=document.createElement('canvas');
+  REC.canvas.width=vw; REC.canvas.height=vh;
+  REC.ctx=REC.canvas.getContext('2d');
+
+  const owned=[];                 /* aa tracks mara chhe — stop karvanu */
+  let videoTrack=null;
+  try{
+    videoTrack=REC.canvas.captureStream(30).getVideoTracks()[0]||null;
+    if(videoTrack) owned.push(videoTrack);
+  }catch(e){ videoTrack=null; }
+
+  const a=buildRecAudioTrack();
+  if(a && a.owned) owned.push(a.track);
+
+  let stream=new MediaStream();
+  let video=!!videoTrack;
+  if(videoTrack) stream.addTrack(videoTrack);
+  if(a && a.track) stream.addTrack(a.track);
+
+  /* canvas capture nathi thatu → sedha remote stream (fallback, risky pan kai to) */
+  if(!stream.getTracks().length){
+    stream=new MediaStream(live);
+    video=live.some(t=>t.kind==='video');
+    if(!stream.getTracks().length){ toast('Record karva kai nathi malyu','warn'); return; }
+  }
+
+  const mime=pickMime(video);
+  let rec;
+  try{
+    rec=new MediaRecorder(stream, mime?{mimeType:mime, videoBitsPerSecond:video?2500000:undefined, audioBitsPerSecond:128000}:undefined);
+  }catch(e){
+    toast('Recorder shuru nathi thato: '+e.name+' — koi bija browser ma try karo','err',6000);
+    owned.forEach(t=>{ try{t.stop();}catch(_){} });
+    REC.ctx=null;
+    return;
+  }
+  S.recorder=rec;
+  S.recChunks=[]; S.recBytes=0; S.recSkip=false;
+
+  rec.ondataavailable=e=>{ if(e.data && e.data.size){ S.recChunks.push(e.data); S.recBytes+=e.data.size; } };
+  rec.onerror=e=>{
+    toast('Recording error: '+((e.error&&e.error.name)||'unknown'),'err',6000);
+    stopRecording();
+  };
+  rec.onstop=()=>finalizeRecording(owned);
+
+  rec.start(1000);
+  S.recording=true; S.recStart=Date.now();
+  REC.lastDraw=0; REC.raf=requestAnimationFrame(drawRecFrame);
+
+  btnRec.classList.add('rec-on');
+  setBtnIcon(btnRec,'square');
+  btnRec.dataset.tip='Recording bandh karo';
+  recChip.hidden=false; recTime.textContent='00:00 · 0 B';
+  toast(video
+    ? 'Recording shuru — mitra nu video + banni ni vaato (audio) record thase'
+    : 'Audio recording shuru — banni ni vaato record thase','ok',4500);
+}
+
+function finalizeRecording(owned){
+  try{ if(REC.raf) cancelAnimationFrame(REC.raf); }catch(e){}
+  REC.raf=0;
+  (owned||[]).forEach(t=>{ try{t.stop();}catch(e){} });
+  REC.canvas=null; REC.ctx=null;
+  if(S.recSkip){ S.recChunks=[]; return; }
+  if(!S.recChunks.length || !S.recBytes){
+    toast('Recording ma data nathi banelu (0 bytes) — aa browser sathe issue lage chhe. Chrome ma try karo','err',7000);
+    return;
+  }
+  const type=(S.recorder && S.recorder.mimeType) || (S.recChunks[0] && S.recChunks[0].type) || 'video/webm';
+  const blob=new Blob(S.recChunks,{type});
+  const ext=type.includes('mp4')?'mp4':'webm';
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='vaato-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.'+ext;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),8000);
+  toast('Recording taiyar — '+fmtBytes(S.recBytes)+' · download folder ma juo','ok',6000);
+}
+
+function stopRecording(){
+  if(!S.recording) return;
+  S.recording=false;
+  try{ S.recorder.stop(); }catch(e){ finalizeRecording([]); }
+  btnRec.classList.remove('rec-on');
+  setBtnIcon(btnRec,'circle');
+  btnRec.dataset.tip='Call record karo';
+  recChip.hidden=true;
+}
+btnRec.addEventListener('click',()=>{ S.recording ? stopRecording() : startRecording(); });
+
+/* --- fullscreen --- */
+function toggleFull(){
+  if(document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(()=>{});
+}
+btnFull.addEventListener('click',toggleFull);
+document.addEventListener('fullscreenchange',()=>{
+  setBtnIcon(btnFull, document.fullscreenElement?'minimize':'maximize');
+});
+
+/* --- end call --- */
+btnEnd.addEventListener('click',()=>{
+  if(btnEnd.classList.contains('confirm')){ endCall(); return; }
+  btnEnd.classList.add('confirm');
+  btnEnd.dataset.tip='Pakku bandh karva fari thicho!';
+  setTimeout(()=>{ btnEnd.classList.remove('confirm'); btnEnd.dataset.tip='Call bandh karo'; },2200);
+});
+
+/* --- back from connect --- */
+cBack.addEventListener('click',()=>{
+  killAll(); resetConnectUI(); showScreen('landing');
+});
+
+/* --- pip drag --- */
+(function(){
+  let drag=null;
+  pip.addEventListener('pointerdown',e=>{
+    const pr=pip.getBoundingClientRect(), sr=stage.getBoundingClientRect();
+    pip.style.left=(pr.left-sr.left)+'px';
+    pip.style.top=(pr.top-sr.top)+'px';
+    pip.style.right='auto'; pip.style.bottom='auto';
+    drag={dx:e.clientX-pr.left, dy:e.clientY-pr.top};
+    pip.setPointerCapture(e.pointerId);
+  });
+  pip.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    const sr=stage.getBoundingClientRect(), pr=pip.getBoundingClientRect();
+    const x=Math.min(Math.max(e.clientX-drag.dx-sr.left,10), Math.max(10,sr.width-pr.width-10));
+    const y=Math.min(Math.max(e.clientY-drag.dy-sr.top,10),  Math.max(10,sr.height-pr.height-10));
+    pip.style.left=x+'px'; pip.style.top=y+'px';
+  });
+  const end=()=>{ drag=null; };
+  pip.addEventListener('pointerup',end);
+  pip.addEventListener('pointercancel',end);
+})();
+
+/* ================= cleanup ================= */
+function killAll(){
+  clearInterval(S.timerInt); clearInterval(S.latencyInt); clearInterval(S.remoteCheck);
+  clearTimeout(S.discT); clearTimeout(S.typingT); clearTimeout(S.dcWatch);
+  /* recording safety — download vagar bhaagi jay nahi */
+  if(S.recording){ S.recSkip=true; try{ S.recorder && S.recorder.stop(); }catch(e){} S.recording=false; }
+  try{ if(REC.raf) cancelAnimationFrame(REC.raf); }catch(e){}
+  REC.raf=0; REC.canvas=null; REC.ctx=null;
+  try{ S.dc && S.dc.close(); }catch(e){}
+  try{ S.pc && S.pc.close(); }catch(e){}
+  S.pc=null; S.dc=null; S.remoteStream=null;
+  S.callStarted=false; S.sharing=false; S.recording=false; S.meters=[];
+  S.camOn=true; S.micOn=true; S.ending=false;
+  S.cand={host:0, srflx:0, relay:0, total:0};
+  [S.localStream,S.shareStream].forEach(s=>{ if(s) s.getTracks().forEach(t=>t.stop()); });
+  S.localStream=null; S.shareStream=null; S.camTrack=null; S.micTrack=null;
+  meterBars.forEach(b=>b.style.transform='scaleY(.15)');
+  peerBarsEls.forEach(b=>b.style.transform='scaleY(.22)');
+  document.title='વાતો · Vaato — P2P Video Call';
+}
+function resetCallUI(){
+  chatMsgs.innerHTML=''; S.unread=0; updateBadge(); toggleChat(false);
+  chatIn.value=''; chatIn.disabled=false; chatIn.placeholder='Pehla jodo…';
+  typingEl.textContent=''; typingEl.classList.remove('show');
+  dcState.textContent='—'; dcState.className='';
+  btnMic.classList.remove('off'); setBtnIcon(btnMic,'mic');
+  btnCam.classList.remove('off'); setBtnIcon(btnCam,'video');
+  btnShare.classList.remove('on'); setBtnIcon(btnShare,'monitor-up');
+  btnRec.classList.remove('rec-on'); setBtnIcon(btnRec,'circle');
+  btnEnd.classList.remove('confirm');
+  recChip.hidden=true; connBanner.hidden=true; cLatency.hidden=true;
+  stageEmpty.classList.remove('gone'); stageEmpty.style.display='';
+  stageEmptyText.textContent='JUDAI AA RAYI CHHE…';
+  remoteVideo.srcObject=null; localVideo.srcObject=null;
+  remoteAvatar.style.display='none';
+  pip.style.left=''; pip.style.top=''; pip.style.right=''; pip.style.bottom='';
+  setCallStatus('live'); cTimer.textContent='00:00';
+  setPeerName('Mitra');
+}
+function resetConnectUI(){
+  offerOut.value=''; answerIn.value=''; replyOut.value='';
+  offerMeta.textContent='BANAVMA AA RAYO…'; replyMeta.textContent='BANAVMA AA RAYO…';
+  [1,2,3].forEach(n=>setStep(n,null));
+  setStatusPill('amber','RAHYO JAVO…');
+  previewVideo.srcObject=null;
+  hostNameIn.textContent='—';
+  guestCodeIn.value=''; codeErr.textContent='';
+  guestCodeWrap.classList.remove('open'); btnGuest.classList.remove('on');
+  clearDiag();
+}
+function endCall(){
+  if(S.endingNow) return; S.endingNow=true;
+  const dur=S.startTime ? fmtDur(Math.floor((Date.now()-S.startTime)/1000)) : '00:00';
+  if(S.recording) stopRecording();   /* download thai jay */
+  killAll();
+  resetCallUI(); resetConnectUI();
+  showScreen('landing');
+  toast('Call puro — '+dur,'info',5000);
+  S.endingNow=false;
+}
+
+/* ================= keyboard shortcuts ================= */
+document.addEventListener('keydown',e=>{
+  if(!testOverlay.hidden){ if(e.key==='Escape') stopSelfTest(); return; }
+  if(callScreen.hidden) return;
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'){ if(e.key==='Escape') e.target.blur(); return; }
+  const k=e.key.toLowerCase();
+  if(k==='m') toggleMic();
+  else if(k==='v') toggleCam();
+  else if(k==='s') toggleShare();
+  else if(k==='c') toggleChat();
+  else if(k==='f') toggleFull();
+  else if(k==='escape' && S.chatOpen) toggleChat(false);
+});
+
+window.addEventListener('beforeunload',e=>{
+  if(S.callStarted){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* ================================================================
+   SELF-TEST — ekle j browser ma be PC ne jodine pipeline check
+   ================================================================ */
+let TST=null;
+function setTestState(which, st){
+  const row=$('tr'+which[0].toUpperCase()+which.slice(1));
+  row.className='t-row '+(st==='wait'?'':st);
+  const ic=row.querySelector('.t-ic');
+  ic.innerHTML='';
+  const i=document.createElement('i');
+  i.setAttribute('data-lucide', st==='ok'?'check':st==='bad'?'x':'loader-circle');
+  if(st==='wait') i.className='spin';
+  ic.appendChild(i);
+  row.querySelector('.t-st').textContent = st==='ok'?'OK':st==='bad'?'FAIL':'RAHYO JAVO…';
+  refreshIcons();
+}
+function tLog(m){
+  const t=new Date().toLocaleTimeString([],{hour12:false});
+  const d=document.createElement('div'); d.textContent='['+t+'] '+m;
+  testLog.appendChild(d); testLog.scrollTop=1e6;
+  console.log('[selftest]',m);
+}
+function stopSelfTest(){
+  if(!TST) return;
+  clearTimeout(TST.timeout);
+  cancelAnimationFrame(TST.rafId);
+  try{ TST.osc && TST.osc.stop(); }catch(e){}
+  try{ TST.actx && TST.actx.close(); }catch(e){}
+  TST.pcs.forEach(p=>{ try{ p.close(); }catch(e){} });
+  TST.tracks.forEach(t=>{ try{ t.stop(); }catch(e){} });
+  testVideo.srcObject=null;
+  TST=null;
+  testOverlay.hidden=true;
+}
+btnSelfTest.addEventListener('click', async ()=>{
+  if(TST) return;
+  testOverlay.hidden=false;
+  testLog.innerHTML='';
+  testVerdict.textContent='Ekle j browser ma be connection banavi ne check karva aa rahyo chhe…';
+  testVerdict.className='tv';
+  setTestState('ice','wait'); setTestState('dc','wait'); setTestState('media','wait');
+
+  const A=new RTCPeerConnection(ICE), B=new RTCPeerConnection(ICE);
+  const T={pcs:[A,B], tracks:[], rafId:0, actx:null, osc:null, timeout:0};
+  TST=T;
+
+  const cv=document.createElement('canvas'); cv.width=640; cv.height=360;
+  const g=cv.getContext('2d');
+  const draw=ts=>{
+    const t=ts/1000;
+    g.fillStyle='#101208'; g.fillRect(0,0,640,360);
+    for(let i=0;i<5;i++){
+      g.strokeStyle=`rgba(242,180,64,${(0.12+i*0.12).toFixed(2)})`; g.lineWidth=2;
+      g.beginPath(); g.arc(320,180,26+i*36+Math.sin(t*2+i*0.8)*9,0,6.283); g.stroke();
+    }
+    g.fillStyle='#f2b440';
+    g.beginPath(); g.arc(320,180,5+Math.sin(t*3)*2,0,6.283); g.fill();
+    g.font='500 15px "JetBrains Mono",monospace';
+    g.fillStyle='rgba(236,232,216,.85)';
+    g.fillText('LOOPBACK SIGNAL · '+t.toFixed(1)+'s',22,34);
+    T.rafId=requestAnimationFrame(draw);
+  };
+  T.rafId=requestAnimationFrame(draw);
+
+  let audioTracks=[];
+  try{
+    const actx=new (window.AudioContext||window.webkitAudioContext)();
+    const dest=actx.createMediaStreamDestination();
+    const osc=actx.createOscillator(), ga=actx.createGain();
+    ga.gain.value=0.0001;
+    osc.connect(ga); ga.connect(dest); osc.start();
+    T.actx=actx; T.osc=osc;
+    audioTracks=dest.stream.getAudioTracks();
+  }catch(e){}
+
+  const stream=new MediaStream();
+  try{
+    const vt=cv.captureStream(30).getVideoTracks()[0];
+    if(vt){ stream.addTrack(vt); T.tracks.push(vt); A.addTrack(vt,stream); }
+  }catch(e){ tLog('Canvas stream nathi banto — video track vagar test'); }
+  audioTracks.forEach(t=>{ stream.addTrack(t); A.addTrack(t,stream); });
+  if(!stream.getTracks().length){
+    setTestState('ice','bad'); setTestState('dc','bad'); setTestState('media','bad');
+    testVerdict.textContent='Browser media stream banavi shaku nathu — WebRTC support nathi lage. Ru divye browser (Chrome/Edge/Firefox) ma kholo.';
+    testVerdict.className='tv bad';
+    return;
+  }
+
+  const dc=A.createDataChannel('vaato-test');
+  const ok={ice:false, dc:false, media:false};
+  const finish=()=>{
+    if(ok.ice && ok.dc && ok.media){
+      testVerdict.textContent='TEST PASS — app ekdum sahu chhe! Judai ni samasya network ke code-transfer ma chhe: banni taraph BACK kari ne FRESH code thi fari try karo, VPN bandh rakho.';
+      testVerdict.className='tv ok';
+      tLog('Badhu pass!');
+    }
+  };
+  dc.onopen=()=>{ ok.dc=true; setTestState('dc','ok'); tLog('Data channel khuli gayi'); finish(); };
+  A.onconnectionstatechange=()=>{
+    tLog('CONN: '+A.connectionState);
+    if(A.connectionState==='connected' && !ok.ice){ ok.ice=true; setTestState('ice','ok'); finish(); }
+    if(A.connectionState==='failed'){
+      setTestState('ice','bad');
+      testVerdict.textContent='ICE connect nathi thatu — firewall / VPN / parental control WebRTC block karto lage chhe. Biju browser mano, ke network badlo.';
+      testVerdict.className='tv bad';
+    }
+  };
+  B.ontrack=e=>{
+    if(!ok.media){ ok.media=true; setTestState('media','ok'); tLog('Remote track aavi gayi — media pipeline chale chhe'); }
+    if(testVideo.srcObject!==e.streams[0]){
+      testVideo.srcObject=e.streams[0];
+      testVideo.play().catch(()=>{});
+    }
+    finish();
+  };
+
+  const toB=[], toA=[];
+  A.onicecandidate=e=>{ if(!e.candidate) return;
+    if(B.remoteDescription) B.addIceCandidate(e.candidate).catch(()=>{});
+    else toB.push(e.candidate); };
+  B.onicecandidate=e=>{ if(!e.candidate) return;
+    if(A.remoteDescription) A.addIceCandidate(e.candidate).catch(()=>{});
+    else toA.push(e.candidate); };
+
+  try{
+    tLog('Offer banavi…');
+    const offer=await A.createOffer();
+    await A.setLocalDescription(offer);
+    await B.setRemoteDescription(offer);
+    tLog('Offer accept thayo — answer banavi…');
+    const ans=await B.createAnswer();
+    await B.setLocalDescription(ans);
+    await A.setRemoteDescription(ans);
+    toB.splice(0).forEach(c=>B.addIceCandidate(c).catch(()=>{}));
+    toA.splice(0).forEach(c=>A.addIceCandidate(c).catch(()=>{}));
+    tLog('SDP exchange puro — ICE checks chalu');
+  }catch(e){
+    tLog('SDP error: '+(e.message||e.name));
+    setTestState('ice','bad');
+    testVerdict.textContent='SDP exchange fail — browser na WebRTC ma dikro lage chhe: '+(e.message||e.name);
+    testVerdict.className='tv bad';
+    return;
+  }
+
+  T.timeout=setTimeout(()=>{
+    if(!(ok.ice && ok.dc && ok.media)){
+      testVerdict.textContent='Timeout — badhu judtu nathi lage. Upar na log ma juo kaya step atki gayo.';
+      testVerdict.className='tv bad';
+    }
+  }, 25000);
+});
+testClose.addEventListener('click', stopSelfTest);
+testOverlay.addEventListener('click',e=>{ if(e.target===testOverlay) stopSelfTest(); });
+
+/* ================= landing signal animation ================= */
+(function signalFx(){
+  const cv=$('signal'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const wrap=cv.parentElement;
+  let W=0,H=0,cx=0,cy=0,R=0;
+
+  const bands=Array.from({length:6},(_,i)=>({
+    r:0, a:Math.random()*6.283, dir:i%2?1:-1,
+    sp:0.12+i*0.05, mul:1, len:0.7+i*0.32, lw:i===2?1.5:1, al:0.14+i*0.05
+  }));
+  const nodes=Array.from({length:3},(_,i)=>({r:0, a:Math.random()*6.283, dir:i%2?-1:1, sp:0.25+i*0.12}));
+
+  function resize(){
+    const r=wrap.getBoundingClientRect();
+    const dpr=Math.min(2,window.devicePixelRatio||1);
+    W=r.width; H=r.height;
+    cv.width=W*dpr; cv.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    cx=W/2; cy=H/2; R=Math.min(W,H)*0.42;
+    bands.forEach((b,i)=>b.r=R*(0.18+i*0.155));
+    nodes.forEach((n,i)=>n.r=R*(0.32+i*0.21));
+  }
+  new ResizeObserver(resize).observe(wrap); resize();
+
+  let px=-1e4,py=-1e4,last=performance.now();
+  wrap.addEventListener('pointermove',e=>{
+    const r=wrap.getBoundingClientRect();
+    px=e.clientX-r.left; py=e.clientY-r.top;
+  });
+  wrap.addEventListener('pointerleave',()=>{ px=py=-1e4; });
+
+  const AMBER='242,180,64', BONE='236,232,216';
+  function frame(now){
+    requestAnimationFrame(frame);
+    if(landing.hidden){ last=now; return; }
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    const t=now/1000;
+    ctx.clearRect(0,0,W,H);
+    ctx.save(); ctx.translate(cx,cy);
+
+    ctx.setLineDash([2,7]);
+    ctx.strokeStyle=`rgba(${BONE},0.10)`; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(0,0,R,0,6.2832); ctx.stroke();
+    ctx.setLineDash([]);
+
+    const pd=Math.hypot(px-cx,py-cy);
+
+    for(const b of bands){
+      const near=Math.abs(pd-b.r)<38;
+      b.mul += ((near?3.6:1)-b.mul)*Math.min(1,dt*6);
+      b.a += b.dir*b.sp*b.mul*dt;
+      ctx.strokeStyle=`rgba(${AMBER},${b.al})`; ctx.lineWidth=b.lw;
+      ctx.beginPath(); ctx.arc(0,0,b.r,b.a,b.a+b.len); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,b.r,b.a+Math.PI,b.a+Math.PI+b.len*0.45); ctx.stroke();
+    }
+
+    const sa=t*0.35;
+    ctx.strokeStyle=`rgba(${AMBER},0.20)`; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(sa)*R*0.14,Math.sin(sa)*R*0.14);
+    ctx.lineTo(Math.cos(sa)*R,Math.sin(sa)*R);
+    ctx.stroke();
+
+    const pts=[];
+    for(const n of nodes){
+      n.a+=n.dir*n.sp*dt;
+      const x=Math.cos(n.a)*n.r, y=Math.sin(n.a)*n.r;
+      pts.push([x,y]);
+      ctx.fillStyle=`rgba(${AMBER},0.95)`;
+      ctx.beginPath(); ctx.arc(x,y,2.6,0,6.2832); ctx.fill();
+      ctx.strokeStyle=`rgba(${AMBER},0.35)`;
+      ctx.beginPath(); ctx.arc(x,y,6.5,0,6.2832); ctx.stroke();
+    }
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+      const d=Math.hypot(pts[i][0]-pts[j][0], pts[i][1]-pts[j][1]);
+      const maxR=R*0.75;
+      if(d<maxR){
+        ctx.strokeStyle=`rgba(${BONE},${((1-d/maxR)*0.28).toFixed(3)})`;
+        ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(pts[i][0],pts[i][1]); ctx.lineTo(pts[j][0],pts[j][1]); ctx.stroke();
+      }
+    }
+
+    ctx.fillStyle=`rgba(${AMBER},1)`;
+    ctx.beginPath(); ctx.arc(0,0,3+Math.sin(t*2.4)*1.3,0,6.2832); ctx.fill();
+    ctx.strokeStyle=`rgba(${AMBER},${(0.25+0.15*Math.sin(t*2.4)).toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(0,0,10+Math.sin(t*2.4)*2.5,0,6.2832); ctx.stroke();
+
+    ctx.restore();
+  }
+  requestAnimationFrame(frame);
+
+  const cap=$('visualState');
+  const setCap=s=>{ cap.textContent=s; };
+  nameInput.addEventListener('focus',()=>setCap('INPUT · NAAM LIKHO'));
+  nameInput.addEventListener('blur',()=>setCap('STANDBY'));
+  btnHost.addEventListener('mouseenter',()=>setCap('SIGNAL TAIYAR · CODE BANSE'));
+  btnHost.addEventListener('mouseleave',()=>setCap('STANDBY'));
+  btnGuest.addEventListener('mouseenter',()=>setCap('CODE INPUT MODE'));
+  btnGuest.addEventListener('mouseleave',()=>setCap('STANDBY'));
+  btnSelfTest.addEventListener('mouseenter',()=>setCap('LOOPBACK TEST MODE'));
+  btnSelfTest.addEventListener('mouseleave',()=>setCap('STANDBY'));
+})();
+
+/* ================= init ================= */
+try{ const saved=localStorage.getItem('vaato-name'); if(saved) nameInput.value=saved; }catch(e){}
+refreshIcons();
+</script>
+</body>
+</html>::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2e3126;border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.screen{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+.screen[hidden]{display:none!important}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+
+/* ============ shared bits ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:11px;border:1px solid transparent;
+  font-weight:600;font-size:14.5px;transition:all .16s ease;letter-spacing:.01em;
+}
+.btn svg{width:16px;height:16px;stroke-width:2.2}
+.btn.primary{background:var(--amber);color:var(--ink)}
+.btn.primary:hover{background:var(--amber-hi);transform:translateY(-1px)}
+.btn.primary:active{transform:translateY(0)}
+.btn.primary:disabled{opacity:.6;cursor:wait;transform:none}
+.btn.ghost{border-color:var(--line2);color:var(--soft)}
+.btn.ghost:hover{border-color:rgba(242,180,64,.55);color:var(--text)}
+.btn.ghost.on{border-color:var(--amber);color:var(--amber)}
+.btn.done{background:var(--green);color:#0f2417}
+.btn.block-btn{width:100%;margin-top:12px}
+
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--soft);transition:all .15s;
+}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn svg{width:18px;height:18px}
+
+.chip{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;
+  padding:5px 11px;border:1px solid rgba(242,180,64,.55);color:var(--amber);border-radius:999px;
+}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--soft);
+}
+.sp-dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.sp-dot.amber{background:var(--amber);animation:amberPulse 1.6s infinite}
+.sp-dot.ok{background:var(--green)}
+.sp-dot.bad{background:var(--red)}
+@keyframes amberPulse{
+  0%{box-shadow:0 0 0 0 rgba(242,180,64,.45)}
+  70%{box-shadow:0 0 0 7px rgba(242,180,64,0)}
+  100%{box-shadow:0 0 0 0 rgba(242,180,64,0)}
+}
+
+[data-tip]{position:relative}
+@media (hover:hover){
+  [data-tip]:hover::after{
+    content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+    background:var(--surface2);border:1px solid var(--line2);color:var(--muted);
+    padding:5px 10px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    letter-spacing:.04em;white-space:nowrap;z-index:30;pointer-events:none;
+  }
+}
+
+/* ============ topbar ============ */
+.topbar{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
+  padding:12px clamp(16px,4vw,40px);border-bottom:1px solid var(--line);
+}
+.tb-left{justify-self:start;display:flex;align-items:center;gap:14px}
+.tb-right{justify-self:end;display:flex;align-items:center;gap:12px}
+.tb-mark{font-family:'Baloo Bhai 2';font-weight:700;font-size:19px;color:var(--text)}
+.tb-mark b{color:var(--amber)}
+
+/* ============ landing ============ */
+.landing{min-height:100dvh;display:flex;flex-direction:column}
+.brandbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px clamp(20px,4vw,44px);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:baseline;gap:12px}
+.brand-mark{font-family:'Baloo Bhai 2';font-weight:800;font-size:22px}
+.brand-mark b{color:var(--amber)}
+.brand-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--muted)}
+.brand-note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--dim)}
+
+.landing-grid{
+  flex:1;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,64px);
+  align-items:center;width:100%;max-width:1300px;margin:0 auto;
+  padding:clamp(28px,5vh,60px) clamp(20px,4vw,56px);
+}
+.eyebrow{
+  display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:.2em;color:var(--amber);
+}
+.eyebrow svg{width:14px;height:14px}
+.display{
+  font-family:'Baloo Bhai 2';font-weight:800;line-height:.98;
+  font-size:clamp(84px,11vw,164px);color:var(--amber);
+  margin:8px 0 14px;user-select:none;
+}
+.display .danda{color:var(--text)}
+.lede{font-size:16.5px;line-height:1.7;color:var(--soft);max-width:52ch}
+
+.join-box{margin-top:30px;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:20px;max-width:600px}
+.join-box label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:var(--muted)}
+.join-box .row{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap}
+.field{
+  flex:1;min-width:180px;background:#0b0c09;border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;font-size:15px;transition:border-color .15s;
+}
+.field::placeholder{color:var(--dim)}
+.field:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(242,180,64,.14)}
+
+.collapse{overflow:hidden;max-height:0;transition:max-height .35s ease,margin .3s ease;margin-top:0}
+.collapse.open{max-height:260px;margin-top:14px}
+.code-in{
+  width:100%;min-height:88px;resize:vertical;background:#0b0c09;border:1px solid var(--line);
+  border-radius:10px;padding:11px 13px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.55;
+  color:#d8d5c6;word-break:break-all;
+}
+.code-in:focus{outline:none;border-color:var(--amber)}
+.code-in::placeholder{color:var(--dim)}
+.collapse .btn{margin-top:10px}
+.form-err{color:var(--red-hi);font-size:12.5px;margin-top:8px;min-height:16px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:13px;line-height:1.55}
+
+.st-row{margin-top:15px;padding-top:15px;border-top:1px dashed var(--line);display:grid;gap:8px}
+.st-note{font-size:12px;color:var(--dim);line-height:1.5}
+
+.facts{list-style:none;margin-top:28px;display:grid;gap:11px}
+.facts li{display:flex;align-items:center;gap:11px;font-size:13.5px;color:#b9bba9}
+.facts svg{width:15px;height:15px;color:var(--amber);flex-shrink:0}
+
+.landing-visual{
+  position:relative;min-height:480px;border:1px solid var(--line);border-radius:18px;
+  overflow:hidden;background:#101208;
+}
+#signal{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.corner{position:absolute;width:16px;height:16px;opacity:.85;pointer-events:none}
+.corner.tl{top:10px;left:10px;border-top:2px solid var(--amber);border-left:2px solid var(--amber)}
+.corner.tr{top:10px;right:10px;border-top:2px solid var(--amber);border-right:2px solid var(--amber)}
+.corner.bl{bottom:44px;left:10px;border-bottom:2px solid var(--amber);border-left:2px solid var(--amber)}
+.corner.br{bottom:44px;right:10px;border-bottom:2px solid var(--amber);border-right:2px solid var(--amber)}
+.visual-caption{
+  position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-top:1px solid var(--line);background:rgba(14,15,12,.72);
+  backdrop-filter:blur(8px);font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.16em;color:var(--muted);
+}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:greenPulse 2s infinite}
+@keyframes greenPulse{
+  0%{box-shadow:0 0 0 0 rgba(88,201,123,.5)}
+  70%{box-shadow:0 0 0 7px rgba(88,201,123,0)}
+  100%{box-shadow:0 0 0 0 rgba(88,201,123,0)}
+}
+
+/* ============ connect screen ============ */
+.connect{min-height:100dvh;display:flex;flex-direction:column}
+.connect-grid{
+  flex:1;display:grid;grid-template-columns:400px 1fr;gap:clamp(24px,3.5vw,48px);
+  width:100%;max-width:1260px;margin:0 auto;align-content:start;
+  padding:32px clamp(20px,4vw,56px);
+}
+.steps{display:grid;gap:9px;align-content:start}
+.step{
+  display:grid;grid-template-columns:34px 1fr;gap:14px;padding:15px 16px;
+  border:1px solid var(--line);border-radius:14px;transition:all .25s;
+}
+.step .s-num{
+  width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:1px;
+}
+.step h3{font-size:15.5px;font-weight:600;color:var(--muted);margin-bottom:3px;transition:color .25s}
+.step p{font-size:13px;line-height:1.55;color:var(--dim)}
+.step.active{border-color:rgba(242,180,64,.5);background:var(--surface)}
+.step.active .s-num{background:var(--amber);border-color:var(--amber);color:var(--ink);font-weight:700}
+.step.active h3{color:var(--text)}
+.step.done{border-color:rgba(88,201,123,.35)}
+.step.done .s-num{background:var(--green);border-color:var(--green);color:#0f2417}
+.step.done h3{color:var(--soft)}
+.step.bad{border-color:rgba(229,83,61,.55)}
+.step.bad .s-num{background:var(--red);border-color:var(--red);color:#fff}
+.step.bad h3{color:var(--red-hi)}
+
+.self-preview{margin-top:16px;position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0a0b08}
+.self-preview video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.preview-badge{
+  position:absolute;left:10px;bottom:10px;padding:5px 11px;border-radius:8px;
+  background:rgba(14,15,12,.75);border:1px solid rgba(255,255,255,.09);
+  font-size:12.5px;backdrop-filter:blur(6px);
+}
+.meter{position:absolute;right:12px;bottom:12px;display:flex;align-items:flex-end;gap:3px;height:16px}
+.meter i{width:3px;height:15px;border-radius:2px;background:var(--green);transform:scaleY(.15);transform-origin:bottom;transition:transform .1s linear}
+
+.code-panel{display:grid;gap:20px;align-content:start}
+.block{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:18px}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px;gap:10px}
+.bt{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:var(--muted)}
+.bm{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);text-align:right}
+textarea.code{
+  width:100%;height:172px;resize:vertical;background:#0b0c09;border:1px solid var(--line);
+  border-radius:10px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.55;
+  color:#d8d5c6;word-break:break-all;user-select:all;
+}
+textarea.code:focus{outline:none;border-color:var(--amber)}
+textarea.code::placeholder{color:var(--dim)}
+textarea.code[readonly]{cursor:text}
+.host-chip{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;
+  border:1px solid rgba(88,201,123,.35);color:var(--green-hi);font-size:13.5px;
+}
+.host-chip svg{width:15px;height:15px;flex-shrink:0}
+.waiting{
+  display:flex;align-items:center;gap:12px;padding:16px;border:1px dashed var(--line2);
+  border-radius:14px;font-size:13.5px;color:var(--muted);line-height:1.5;
+}
+.dots{display:flex;gap:4px;flex-shrink:0}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}
+.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.2}30%{opacity:1}}
+
+/* connection log (diagnostics) */
+.diag{
+  height:118px;overflow-y:auto;background:#0b0c09;border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.75;color:var(--muted);
+}
+.diag div{white-space:pre-wrap;word-break:break-word}
+.diag-legend{
+  margin-top:9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
+  letter-spacing:.03em;line-height:1.6;
+}
+
+/* ============ self-test overlay ============ */
+.test-overlay{
+  position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+  background:rgba(8,9,6,.8);backdrop-filter:blur(6px);padding:20px;
+}
+.test-overlay[hidden]{display:none!important}
+.test-panel{
+  width:min(480px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;
+  border:1px solid var(--line2);border-radius:18px;background:var(--surface);
+  animation:rise .35s both;
+}
+.test-head{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line)}
+#testVideo{width:100%;aspect-ratio:16/9;background:#0a0b08;display:block;border-bottom:1px solid var(--line)}
+.t-rows{padding:4px 18px}
+.t-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.t-row:last-child{border-bottom:none}
+.t-ic{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--line2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+}
+.t-ic svg{width:13px;height:13px}
+.t-lb{flex:1;font-size:14px;color:var(--soft)}
+.t-st{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;color:var(--dim)}
+.t-row.ok .t-ic{background:var(--green);border-color:var(--green);color:#0f2417}
+.t-row.ok .t-st{color:var(--green-hi)}
+.t-row.bad .t-ic{background:var(--red);border-color:var(--red);color:#fff}
+.t-row.bad .t-st{color:var(--red-hi)}
+.test-log{margin:0 18px 12px;height:76px}
+.tv{padding:13px 18px;font-size:13.5px;line-height:1.55;border-top:1px solid var(--line);color:var(--muted)}
+.tv.ok{color:var(--green-hi)}
+.tv.bad{color:var(--red-hi)}
+
+/* ============ call screen ============ */
+.call{position:relative;height:100dvh;overflow:hidden;display:block}
+#stage{position:absolute;inset:0;background:#000}
+#remoteVideo{width:100%;height:100%;object-fit:cover;display:block}
+.stage-empty{
+  position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:18px;background:var(--bg);transition:opacity .6s;
+}
+.stage-empty.gone{opacity:0;pointer-events:none}
+.spinner{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--amber);animation:spin .9s linear infinite}
+.stage-empty p{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;color:var(--muted)}
+.remote-avatar{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg)}
+.ra-in{font-family:'Baloo Bhai 2';font-weight:800;font-size:110px;color:var(--amber);opacity:.92;line-height:1}
+.ra-name{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;color:var(--muted)}
+
+.peer-pill{
+  position:absolute;left:20px;bottom:112px;z-index:4;display:flex;align-items:center;gap:10px;
+  padding:9px 15px;border-radius:999px;background:rgba(14,15,12,.72);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1);transition:border-color .15s;
+}
+.peer-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.peer-pill span.name{font-size:14px;font-weight:600}
+.peer-pill .bars{display:flex;align-items:flex-end;gap:2.5px;height:12px}
+.peer-pill .bars i{width:2.5px;height:100%;border-radius:2px;background:var(--green-hi);transform:scaleY(.22);transform-origin:bottom;transition:transform .1s linear,background .15s}
+.peer-pill.speaking{border-color:rgba(242,180,64,.6)}
+.peer-pill.speaking .bars i{background:var(--amber)}
+
+.pip{
+  position:absolute;right:22px;bottom:112px;width:232px;aspect-ratio:16/9;z-index:4;
+  border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 14px 34px rgba(0,0,0,.55);cursor:grab;touch-action:none;background:#0a0b08;
+  transition:border-color .15s;
+}
+.pip:active{cursor:grabbing}
+.pip.speaking{border-color:var(--amber)}
+.pip video{width:100%;height:100%;object-fit:cover;display:block}
+.pip video.mirror{transform:scaleX(-1)}
+.pip-off{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#14160f;font-family:'Baloo Bhai 2';font-weight:800;font-size:36px;color:var(--amber)}
+.pip-tag{
+  position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:6px;
+  background:rgba(14,15,12,.82);border:1px solid rgba(255,255,255,.1);
+  font-family:'Baloo Bhai 2';font-weight:700;font-size:11px;color:#cfcbb8;letter-spacing:.05em;
+}
+
+.conn-banner{
+  position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:6;
+  display:flex;align-items:center;gap:10px;padding:10px 17px;border-radius:12px;
+  background:#2a1c10;border:1px solid rgba(229,83,61,.45);color:#f0b7a8;font-size:13.5px;
+  max-width:min(560px,90vw);
+}
+.conn-banner svg{width:16px;height:16px;flex-shrink:0}
+
+.call .topbar{
+  position:absolute;top:0;left:0;right:0;z-index:6;
+  background:rgba(14,15,12,.62);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.call-status{display:inline-flex;align-items:center;gap:9px;padding:8px 15px;border-radius:999px;background:rgba(21,23,15,.85);border:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em}
+.call-status .dot{width:8px;height:8px;border-radius:50%}
+.call-status .dot.live{background:var(--green)}
+.call-status .dot.weak{background:var(--amber);animation:amberPulse 1.4s infinite}
+.call-status .dot.lost{background:var(--red)}
+.call-status .sep{width:1px;height:12px;background:var(--line2)}
+.rec-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid rgba(229,83,61,.45);border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red-hi)}
+.rdot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
+.latency-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.latency-chip::before{content:'';width:6px;height:6px;border-radius:50%}
+.latency-chip.good::before{background:var(--green)}
+.latency-chip.fair::before{background:var(--amber)}
+.latency-chip.bad::before{background:var(--red)}
+
+.controls{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:8;
+  display:flex;gap:7px;padding:8px;border-radius:999px;
+  background:rgba(20,22,16,.8);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.1);box-shadow:0 16px 40px rgba(0,0,0,.45);
+}
+.ctl{
+  position:relative;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;color:#e9e6d8;border:1px solid transparent;transition:all .15s;
+}
+.ctl svg{width:20px;height:20px;stroke-width:2}
+.ctl:hover{background:rgba(255,255,255,.09)}
+.ctl.off{color:var(--red-hi);background:rgba(229,83,61,.13);border-color:rgba(229,83,61,.4)}
+.ctl.on{color:var(--amber);background:rgba(242,180,64,.1);border-color:rgba(242,180,64,.45)}
+.ctl.rec-on{color:var(--red-hi);background:rgba(229,83,61,.12);border-color:rgba(229,83,61,.55)}
+.ctl.danger{background:var(--red);color:#fff}
+.ctl.danger:hover{background:#f06a54}
+.ctl.danger.confirm{animation:urgent .5s infinite alternate}
+@keyframes urgent{
+  from{box-shadow:0 0 0 0 rgba(229,83,61,.55)}
+  to{box-shadow:0 0 0 9px rgba(229,83,61,0)}
+}
+.badge{
+  position:absolute;top:3px;right:3px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:var(--amber);color:var(--ink);font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.badge[hidden]{display:none}
+
+.chat{
+  position:absolute;top:64px;bottom:96px;right:0;width:min(352px,100%);z-index:7;
+  display:flex;flex-direction:column;background:rgba(16,18,12,.94);backdrop-filter:blur(20px);
+  border-left:1px solid rgba(255,255,255,.09);
+  transform:translateX(105%);transition:transform .38s cubic-bezier(.2,.8,.25,1);
+}
+.chat.open{transform:none}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
 .chat-head span{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;color:var(--muted)}
 .chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:15px}
 .msg{max-width:88%;animation:fadeUp .25s ease both}
