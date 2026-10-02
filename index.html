@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- વાતો v4 · START — aa file na BILKUL end ma "VAATO · END" marker joie. Nathi dekhay to copy adhu che! -->
+<!-- વાતો v6 · START — aa file na BILKUL end ma "VAATO · END" marker joie. Nathi dekhay to copy adhu che! -->
 <html lang="gu">
 <head>
 <meta charset="UTF-8"/>
@@ -47,7 +47,6 @@ input,textarea{font-family:inherit;color:var(--text)}
 .gate-card .gk{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);margin-top:14px;letter-spacing:.06em}
 #bootErr{position:fixed;left:12px;right:12px;bottom:12px;z-index:98;background:#2a140f;border:1px solid var(--red);border-radius:12px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:#ffb3a5;display:none;max-height:38vh;overflow:auto}
 
-/* icon fallback (lucide CDN fail thay to text) */
 .itxt{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.04em;display:inline-block}
 
 .screen{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
@@ -446,7 +445,7 @@ textarea.code[readonly]{cursor:text}
 .rb-txt span{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:.04em}
 .rb-body .btn{padding:10px 14px;font-size:13.5px;flex-shrink:0}
 
-/* ============ toasts — pointer-events:none etle koi button block nathi thato ============ */
+/* ============ toasts ============ */
 #toasts{
   position:fixed;left:20px;bottom:20px;z-index:60;display:flex;flex-direction:column;gap:10px;
   align-items:flex-start;max-width:min(350px,calc(100vw - 40px));pointer-events:none;
@@ -496,7 +495,7 @@ textarea.code[readonly]{cursor:text}
 </head>
 <body>
 
-<!-- JS na chale to aa box page par raheshe + fix ni rite. JS chale to turant gayab: -->
+<!-- JS na chale to aa box page par raheshe. JS chale to turant gayab: -->
 <div id="jsGate">
   <div class="gate-card">
     <h2>STOP · APP LOAD NATHI THATU</h2>
@@ -752,11 +751,11 @@ textarea.code[readonly]{cursor:text}
 
 <script>
 /* ================================================================
-   વાતો (Vaato) v4 — P2P video call + self-diagnosing boot
+   વાતો (Vaato) v6 — P2P video call + self-diagnosing boot
+   v6 FIX: btnMic id mismatch (btnMute→btnMic) — e j bug hato je
+   "mute/record/end kaam nathi karta" karan banto hato!
    ================================================================ */
 
-/* ---------- BOOT GUARD: aa script chale etle gate gayab.
-   Na chale (file adhi copy) to upar no lal box page par j raheshe. ---------- */
 function bootErr(msg){
   const b=document.getElementById('bootErr');
   if(!b) return;
@@ -771,6 +770,25 @@ window.addEventListener('unhandledrejection',e=>{
 });
 document.getElementById('jsGate').style.display='none';
 
+/* ---------- BOOT CHECK: koi pan element male j nahi to NAAM sathe dokhlo.
+   Aa thaai j hadhe hadhe — aa prakaar no bug (null ref) fari kadi chhupi nahi shake. ---------- */
+(function bootCheck(){
+  const need=['landing','nameInput','btnHost','btnGuest','guestCodeIn','btnJoin','codeErr',
+    'connect','cBack','step1','step2','step3','previewVideo','previewMeter',
+    'offerOut','answerIn','replyOut','diagLog',
+    'callScreen','stage','remoteVideo','localVideo','pip','pipOff','pipTag',
+    'peerPill','peerBars','peerMute','remoteAvatar','stageEmpty','connBanner',
+    'chatPanel','chatForm','chatIn','chatMsgs','typing','dcState',
+    'btnMic','btnCam','btnShare','btnChat','btnRec','btnEnd','btnFull',
+    'recChip','recTime','cTimer','cLatency','statusDot','statusLabel',
+    'recBar','recPrev','recDl','recBarX',
+    'btnSelfTest','testOverlay','testVideo','testClose','toasts','signal'];
+  const missing=need.filter(id=>!document.getElementById(id));
+  if(missing.length){
+    bootErr('FILE MA AA ELEMENT MALE NATHI: '+missing.join(', ')+' — code adhi copy thai lage chhe, fari puru copy karo');
+  }
+})();
+
 /* ---------- utils ---------- */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -781,12 +799,11 @@ const fmtBytes = b => { if(!b) return '0 B'; const u=['B','KB','MB','GB']; let i
   while(n>=1024 && i<3){ n/=1024; i++; } return (i? n.toFixed(1):n)+' '+u[i]; };
 function refreshIcons(){ try{ window.lucide && lucide.createIcons(); }catch(e){} }
 
-/* icon fallback: lucide CDN load na thay to pan buttons dikhe (text label thi) */
 const ICON_TXT={mic:'MIC','mic-off':'MUTE',video:'CAM','video-off':'CAM·X','monitor-up':'SHARE','monitor-x':'UNSHR','message-square':'CHAT',circle:'REC',square:'STOP','phone-off':'END','arrow-left':'BACK',x:'CLOSE',maximize:'FULL',minimize:'EXIT',copy:'COPY',check:'OK','log-in':'JOIN','key-round':'CODE','user-round':'HOST',info:'i','circle-check':'OK','triangle-alert':'!','circle-alert':'!!','loader-circle':'···','flask-conical':'TEST',send:'SEND',download:'SAVE',radio:'·'};
 const iconHtml = n => window.lucide
   ? `<i data-lucide="${n}"></i>`
   : `<span class="itxt">${ICON_TXT[n]||'·'}</span>`;
-setTimeout(()=>{                       /* static icons no fallback (CDL slow/block hoy to) */
+setTimeout(()=>{
   if(window.lucide) return;
   document.querySelectorAll('i[data-lucide]').forEach(el=>{
     el.textContent=ICON_TXT[el.getAttribute('data-lucide')]||'·';
@@ -813,7 +830,7 @@ const landing=$('landing'), nameInput=$('nameInput'), btnHost=$('btnHost'), btnG
   recChip=$('recChip'), recTime=$('recTime'),
   chatPanel=$('chatPanel'), chatClose=$('chatClose'), chatMsgs=$('chatMsgs'), typingEl=$('typing'),
   chatForm=$('chatForm'), chatIn=$('chatIn'), chatBadge=$('chatBadge'), dcState=$('dcState'),
-  btnMute=$('btnMute'), btnCam=$('btnCam'), btnShare=$('btnShare'), btnChat=$('btnChat'),
+  btnMic=$('btnMic'), btnCam=$('btnCam'), btnShare=$('btnShare'), btnChat=$('btnChat'),
   btnRec=$('btnRec'), btnEnd=$('btnEnd'),
   meterBars=[...$('previewMeter').children],
   recBar=$('recBar'), recPrev=$('recPrev'), recMeta=$('recMeta'), recDl=$('recDl'), recBarX=$('recBarX'),
@@ -851,7 +868,7 @@ function showScreen(id){ ['landing','connect','callScreen'].forEach(s=>$(s).hidd
 function setBtnIcon(btn,name){ btn.innerHTML=iconHtml(name); refreshIcons(); }
 function setBusy(btn,on,label){
   if(on){ btn.dataset.orig=btn.innerHTML; btn.disabled=true;
-    btn.innerHTML=`${iconHtml('loader-circle').replace('class="itxt"','class="itxt spin"')} ${label||'Rahyo javo…'}`; }
+    btn.innerHTML=`${window.lucide?'<i data-lucide="loader-circle" class="spin"></i>':'<span class="itxt spin">···</span>'} ${label||'Rahyo javo…'}`; }
   else if(btn.dataset.orig){ btn.disabled=false; btn.innerHTML=btn.dataset.orig; }
   refreshIcons();
 }
@@ -1456,7 +1473,7 @@ function toggleMic(){
   if(!live.length){ toast('Aa call ma mic track j nathi — device ke permission check karo','warn',4000); return; }
   S.micOn=!S.micOn;
   live.forEach(t=>t.enabled=S.micOn);
-  btnMute.classList.toggle('off',!S.micOn);
+  btnMic.classList.toggle('off',!S.micOn);
   setBtnIcon(btnMic, S.micOn?'mic':'mic-off');
   dcSend({t:'state', mic:S.micOn, cam:S.camOn});
   toast(S.micOn?'Mic chalu — PiP border bolva par chamkashe':'Mic bandh — mitra tamne nahi sambhalse','info',2600);
@@ -1472,7 +1489,7 @@ function toggleCam(){
   updatePipVisual();
   toast(S.camOn?'Camera chalu':'Camera bandh','info',1500);
 }
-btnMute.addEventListener('click',toggleMic);
+btnMic.addEventListener('click',toggleMic);
 btnCam.addEventListener('click',toggleCam);
 
 /* --- screen share --- */
@@ -1820,7 +1837,7 @@ window.addEventListener('beforeunload',e=>{
 });
 
 /* ================================================================
-   SELF-TEST — ekle j browser ma be PC jodine pipeline check
+   SELF-TEST
    ================================================================ */
 let TST=null;
 function setTestState(which, st){
@@ -2043,8 +2060,6 @@ testOverlay.addEventListener('click',e=>{ if(e.target===testOverlay) stopSelfTes
   const setCap=s=>{ cap.textContent=s; };
   nameInput.addEventListener('focus',()=>setCap('INPUT · NAAM LIKHO'));
   nameInput.addEventListener('blur',()=>setCap('STANDBY'));
-  btnHost.addEventListener('mouseenter',()=>setCap('SIGNAL TAIYAR · CODE BANSE'));
-  btnHost.addEventListener('mouseleave',()=>setCap('STANDBY'));
 })();
 
 /* ================= init ================= */
@@ -2053,4 +2068,4 @@ refreshIcons();
 </script>
 </body>
 </html>
-<!-- વાતો v4 · END — aa line dekhay to file PURI copy thai chhe. Aa line nathi dekhay to code adhu che, fari copy karo! -->
+<!-- વાતો v6 · END — aa line dekhay to file PURI copy thai chhe. Aa line nathi dekhay to code adhu che, fari copy karo! -->
